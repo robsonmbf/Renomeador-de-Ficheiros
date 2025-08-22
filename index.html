@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class=""> <!-- A classe 'dark' será adicionada aqui pelo JS -->
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Renomeador de Ficheiros eSocial (S-2220 / S-2240)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script> <!-- Biblioteca para ler planilhas -->
+    <script>
+        // Configuração do Tailwind para o Modo Escuro
+        tailwind.config = {
+            darkMode: 'class',
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        .file-item, .employee-item {
+            transition: all 0.2s ease-in-out;
+        }
+        .file-item:hover, .employee-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .drop-zone-active {
+            border-color: #3b82f6;
+            background-color: #eff6ff;
+        }
+        .dark .drop-zone-active {
+            border-color: #60a5fa;
+            background-color: #1e293b;
+        }
+        /* Estilo para o tooltip */
+        [data-tooltip]:hover::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            margin-bottom: 5px;
+            background-color: #333;
+            color: #fff;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            white-space: nowrap;
+            z-index: 10;
+        }
+        [data-tooltip] {
+            position: relative;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 flex items-center justify-center min-h-screen p-4">
+
+    <div class="w-full max-w-4xl bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 md:p-10 relative">
+        
+        <!-- BOTÃO MODO ESCURO -->
+        <div class="absolute top-4 right-4">
+            <button id="theme-toggle" class="p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 transition">
+                <i id="theme-toggle-dark-icon" class="fas fa-moon text-lg hidden"></i>
+                <i id="theme-toggle-light-icon" class="fas fa-sun text-lg hidden"></i>
+            </button>
+        </div>
+
+        <header class="text-center mb-8">
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white">Renomeador de Ficheiros eSocial</h1>
+            <p class="text-gray-500 dark:text-gray-400 mt-2">Uma ferramenta para automatizar a renomeação dos eventos S-2220 e S-2240.</p>
+        </header>
+
+        <main>
+            <!-- Passo 1: Seleção da Empresa ou CNPJ Manual -->
+            <div class="mb-6">
+                <div class="flex justify-between items-center mb-3">
+                    <label for="empresa" class="block text-lg font-semibold text-gray-700 dark:text-gray-300">
+                        <span class="bg-blue-500 text-white rounded-full w-8 h-8 inline-flex items-center justify-center mr-3">1</span>Selecione a Empresa
+                    </label>
+                    <button id="manage-companies-btn" class="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-semibold">
+                        <i class="fas fa-cog mr-1"></i>Gerir Empresas
+                    </button>
+                </div>
+                <select id="empresa" class="w-full p-4 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+                    <option value="" disabled selected>Escolha uma opção...</option>
+                </select>
+                <div id="manual-cnpj-container" class="mt-4 hidden">
+                    <label for="manual-cnpj-input" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Informe o CNPJ (apenas números)</label>
+                    <input type="text" id="manual-cnpj-input" maxlength="14" class="mt-1 w-full p-4 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" placeholder="Digite os 14 dígitos do CNPJ">
+                </div>
+            </div>
+
+            <!-- Passo 2: Padrão de Nomenclatura -->
+            <div class="mb-8">
+                <div class="flex justify-between items-center mb-3">
+                    <label for="naming-pattern-select" class="block text-lg font-semibold text-gray-700 dark:text-gray-300">
+                        <span class="bg-blue-500 text-white rounded-full w-8 h-8 inline-flex items-center justify-center mr-3">2</span>Selecione o Padrão
+                    </label>
+                    <button id="manage-patterns-btn" class="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-semibold">
+                        <i class="fas fa-edit mr-1"></i>Gerir Padrões
+                    </button>
+                </div>
+                <select id="naming-pattern-select" class="w-full p-4 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"></select>
+                <div class="mt-2">
+                    <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Pré-visualização do padrão:</p>
+                    <p id="pattern-preview" class="text-sm text-gray-800 dark:text-gray-200 bg-gray-100 dark:bg-gray-900 p-3 rounded-lg font-mono border border-gray-200 dark:border-gray-700"></p>
+                </div>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">Placeholders disponíveis: [prefixo], [cnpj], [data], [cpf], [matricula]</p>
+            </div>
+
+            <!-- Passo 3: Upload dos Ficheiros -->
+            <div class="mb-8">
+                <h2 class="text-lg font-semibold mb-3 text-gray-700 dark:text-gray-300"><span class="bg-blue-500 text-white rounded-full w-8 h-8 inline-flex items-center justify-center mr-3">3</span>Carregue os Ficheiros XML</h2>
+                <div id="drop-zone" class="border-4 border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-8 text-center cursor-pointer transition hover:bg-gray-50 dark:hover:bg-gray-700">
+                    <div class="flex flex-col items-center justify-center">
+                        <i class="fas fa-cloud-upload-alt text-5xl text-gray-400 dark:text-gray-500 mb-4"></i>
+                        <p class="text-gray-600 dark:text-gray-300 font-semibold">Arraste e solte os ficheiros aqui</p>
+                        <p class="text-gray-500 dark:text-gray-400 text-sm mt-1">ou</p>
+                        <label for="file-input" class="mt-2 bg-blue-600 text-white font-bold py-2 px-4 rounded-lg cursor-pointer hover:bg-blue-700 transition">
+                            Selecione os Ficheiros
+                        </label>
+                        <input type="file" id="file-input" multiple accept=".xml" class="hidden">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Passo 4 (Opcional): Upload da Planilha -->
+            <div class="mb-8">
+                <h2 class="text-lg font-semibold mb-3 text-gray-700 dark:text-gray-300"><span class="bg-gray-500 text-white rounded-full w-8 h-8 inline-flex items-center justify-center mr-3">4</span>(Opcional) Carregue a Planilha SOC</h2>
+                <div class="flex items-center gap-4">
+                    <label for="spreadsheet-input" class="flex-grow bg-gray-600 text-white font-bold py-3 px-4 rounded-lg cursor-pointer hover:bg-gray-700 transition text-center">
+                        <i class="fas fa-file-excel mr-2"></i>Selecionar Planilha (.xls, .xlsx)
+                    </label>
+                    <input type="file" id="spreadsheet-input" accept=".xls, .xlsx" class="hidden">
+                    <span id="spreadsheet-status" class="text-sm font-medium text-gray-600 dark:text-gray-300">Nenhuma planilha carregada.</span>
+                </div>
+            </div>
+
+            <!-- Passo 5: Download -->
+            <div class="mb-6">
+                <h2 class="text-lg font-semibold mb-4 text-gray-700 dark:text-gray-300"><span class="bg-blue-500 text-white rounded-full w-8 h-8 inline-flex items-center justify-center mr-3">5</span>Descarregue os Ficheiros</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <button id="download-zip-btn" class="bg-indigo-600 text-white font-bold py-3 px-4 rounded-lg shadow-md hover:bg-indigo-700 transition disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                        <i class="fas fa-file-archive"></i>.zip
+                    </button>
+                     <button id="download-individual-btn" class="bg-sky-600 text-white font-bold py-3 px-4 rounded-lg shadow-md hover:bg-sky-700 transition disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                        <i class="fas fa-download"></i>Individuais
+                    </button>
+                    <button id="download-report-btn" class="bg-green-600 text-white font-bold py-3 px-4 rounded-lg shadow-md hover:bg-green-700 transition disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                        <i class="fas fa-file-excel"></i>Relatório (.xlsx)
+                    </button>
+                    <button id="clear-list-btn" class="bg-red-600 text-white font-bold py-3 px-4 rounded-lg shadow-md hover:bg-red-700 transition disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                        <i class="fas fa-trash"></i>Limpar
+                    </button>
+                </div>
+                <div class="mt-4 flex items-center justify-center">
+                    <input type="checkbox" id="organize-folders-checkbox" class="h-4 w-4 rounded border-gray-300 dark:border-gray-500 text-indigo-600 focus:ring-indigo-500" checked>
+                    <label for="organize-folders-checkbox" class="ml-2 block text-sm text-gray-900 dark:text-gray-300">Organizar em subpastas (no .zip)</label>
+                </div>
+            </div>
+            
+            <!-- Lista de Ficheiros -->
+            <div id="file-list-container" class="mt-8 hidden">
+                 <div id="s2220-section" class="mb-6 hidden">
+                     <h3 class="text-xl font-semibold mb-4">Evento S-2220 (<span id="s2220-count">0</span>)</h3>
+                     <div id="s2220-list" class="space-y-3"></div>
+                 </div>
+                 <div id="s2240-section" class="mb-6 hidden">
+                     <h3 class="text-xl font-semibold mb-4">Evento S-2240 (<span id="s2240-count">0</span>)</h3>
+                     <div id="s2240-list" class="space-y-3"></div>
+                 </div>
+                 <div id="error-section" class="mb-6 hidden">
+                     <h3 class="text-xl font-semibold mb-4 text-red-500">Ficheiros com Erro (<span id="error-count">0</span>)</h3>
+                     <div id="error-list" class="space-y-3"></div>
+                 </div>
+            </div>
+
+            <!-- PAINEL: Status dos Funcionários da Planilha -->
+            <div id="employee-status-container" class="mt-8 hidden">
+                <h3 class="text-xl font-semibold mb-4 text-gray-800 dark:text-white">Status dos Funcionários da Planilha (com envios)</h3>
+                <div id="employee-status-list" class="space-y-3 max-h-80 overflow-y-auto pr-2"></div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- MODAL DE ERRO -->
+    <div id="error-modal" class="fixed inset-0 bg-black bg-opacity-60 hidden items-center justify-center p-4 z-50">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-2xl p-6 max-w-sm w-full text-center">
+            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
+                <i class="fas fa-times text-2xl text-red-600"></i>
+            </div>
+            <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white mt-4" id="error-title">Erro</h3>
+            <div class="mt-2 px-7 py-3">
+                <p class="text-sm text-gray-500 dark:text-gray-400" id="error-message">Ocorreu um erro.</p>
+            </div>
+            <div class="items-center px-4 py-3">
+                <button id="close-error-modal-btn" class="px-4 py-2 bg-red-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-300">
+                    Fechar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL GERIR EMPRESAS -->
+    <div id="companies-modal" class="fixed inset-0 bg-black bg-opacity-60 hidden items-center justify-center p-4 z-50">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-2xl p-6 w-full max-w-md">
+            <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4">Gerir Empresas</h3>
+            <form id="add-company-form" class="space-y-4 mb-6">
+                <div>
+                    <label for="company-name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Nome da Empresa</label>
+                    <input type="text" id="company-name" placeholder="Ex: Minha Empresa (0001-00)" required class="mt-1 w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700">
+                </div>
+                <div>
+                    <label for="company-cnpj" class="block text-sm font-medium text-gray-700 dark:text-gray-300">CNPJ (apenas números)</label>
+                    <input type="text" id="company-cnpj" placeholder="12345678000100" maxlength="14" required class="mt-1 w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700">
+                </div>
+                <button type="submit" class="w-full bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700">Adicionar Empresa</button>
+            </form>
+            <div id="company-list" class="space-y-2 max-h-60 overflow-y-auto"></div>
+            <div class="mt-6 text-right">
+                <button id="close-companies-modal-btn" class="px-4 py-2 bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-200 font-medium rounded-md hover:bg-gray-300 dark:hover:bg-gray-500">
+                    Fechar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL GERIR PADRÕES -->
+    <div id="patterns-modal" class="fixed inset-0 bg-black bg-opacity-60 hidden items-center justify-center p-4 z-50">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-2xl p-6 w-full max-w-md">
+            <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4">Gerir Padrões de Nomenclatura</h3>
+            <form id="add-pattern-form" class="space-y-4 mb-6">
+                <div>
+                    <label for="pattern-name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Nome do Padrão</label>
+                    <input type="text" id="pattern-name" placeholder="Ex: Padrão SOC" required class="mt-1 w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700">
+                </div>
+                <div>
+                    <label for="pattern-value" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Padrão</label>
+                    <input type="text" id="pattern-value" placeholder="[prefixo]_[cnpj]_[data]_[cpf]_[matricula]" required class="mt-1 w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700">
+                </div>
+                <button type="submit" class="w-full bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700">Adicionar Padrão</button>
+            </form>
+            <div id="pattern-list" class="space-y-2 max-h-60 overflow-y-auto"></div>
+            <div class="mt-6 text-right">
+                <button id="close-patterns-modal-btn" class="px-4 py-2 bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-200 font-medium rounded-md hover:bg-gray-300 dark:hover:bg-gray-500">
+                    Fechar
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // --- Seletores de Elementos DOM ---
+            const empresaSelect = document.getElementById('empresa');
+            const dropZone = document.getElementById('drop-zone');
+            const fileInput = document.getElementById('file-input');
+            const downloadZipBtn = document.getElementById('download-zip-btn');
+            const downloadIndividualBtn = document.getElementById('download-individual-btn');
+            const downloadReportBtn = document.getElementById('download-report-btn');
+            const clearListBtn = document.getElementById('clear-list-btn');
+            const fileListContainer = document.getElementById('file-list-container');
+            const organizeFoldersCheckbox = document.getElementById('organize-folders-checkbox');
+            const namingPatternSelect = document.getElementById('naming-pattern-select');
+            const manualCnpjContainer = document.getElementById('manual-cnpj-container');
+            const manualCnpjInput = document.getElementById('manual-cnpj-input');
+            const patternPreview = document.getElementById('pattern-preview');
+            const spreadsheetInput = document.getElementById('spreadsheet-input');
+            const spreadsheetStatus = document.getElementById('spreadsheet-status');
+            const employeeStatusContainer = document.getElementById('employee-status-container');
+            const employeeStatusList = document.getElementById('employee-status-list');
+
+            // --- Seletores de Modais ---
+            const errorModal = {
+                el: document.getElementById('error-modal'),
+                title: document.getElementById('error-title'),
+                message: document.getElementById('error-message'),
+                closeBtn: document.getElementById('close-error-modal-btn')
+            };
+            const companiesModal = {
+                el: document.getElementById('companies-modal'),
+                openBtn: document.getElementById('manage-companies-btn'),
+                closeBtn: document.getElementById('close-companies-modal-btn'),
+                form: document.getElementById('add-company-form'),
+                list: document.getElementById('company-list'),
+                nameInput: document.getElementById('company-name'),
+                cnpjInput: document.getElementById('company-cnpj')
+            };
+            const patternsModal = {
+                el: document.getElementById('patterns-modal'),
+                openBtn: document.getElementById('manage-patterns-btn'),
+                closeBtn: document.getElementById('close-patterns-modal-btn'),
+                form: document.getElementById('add-pattern-form'),
+                list: document.getElementById('pattern-list'),
+                nameInput: document.getElementById('pattern-name'),
+                valueInput: document.getElementById('pattern-value')
+            };
+            
+            // --- Seletores Dark Mode ---
+            const themeToggleBtn = document.getElementById('theme-toggle');
+            const themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');
+            const themeToggleLightIcon = document.getElementById('theme-toggle-light-icon');
+
+            // --- Estado da Aplicação ---
+            let processedFiles = [];
+            let companies = [];
+            let namingPatterns = [];
+            let socEmployeesData = new Map();
+            
+            // --- Lógica do Modo Escuro ---
+            const applyTheme = () => {
+                if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                    document.documentElement.classList.add('dark');
+                    themeToggleLightIcon.classList.remove('hidden');
+                    themeToggleDarkIcon.classList.add('hidden');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                    themeToggleDarkIcon.classList.remove('hidden');
+                    themeToggleLightIcon.classList.add('hidden');
+                }
+            };
+
+            themeToggleBtn.addEventListener('click', () => {
+                const isDark = document.documentElement.classList.toggle('dark');
+                localStorage.setItem('color-theme', isDark ? 'dark' : 'light');
+                applyTheme();
+            });
+            
+            // --- Lógica de Gerenciamento de Empresas ---
+            const saveCompanies = () => localStorage.setItem('esocial_renamer_companies', JSON.stringify(companies));
+
+            const loadCompanies = () => {
+                const stored = localStorage.getItem('esocial_renamer_companies');
+                companies = stored ? JSON.parse(stored) : [
+                    { name: "Fundo de Promoções Coletivas do Shopping RioMar (0001-23)", cnpj: "16416670000123" },
+                    { name: "Mobilidade Recife Parking Ltda (0001-00)", cnpj: "15768762000100" },
+                    { name: "Subcondomínio Riomar Recife (0001-70)", cnpj: "16888022000170" }
+                ];
+                renderCompanyUI();
+            };
+
+            const renderCompanyUI = () => {
+                empresaSelect.innerHTML = '<option value="" disabled selected>Escolha uma opção...</option>';
+                companies.forEach(company => {
+                    const option = document.createElement('option');
+                    option.value = company.cnpj;
+                    option.textContent = company.name;
+                    empresaSelect.appendChild(option);
+                });
+                
+                const manualOption = document.createElement('option');
+                manualOption.value = 'manual';
+                manualOption.textContent = '--- Informar CNPJ manualmente ---';
+                empresaSelect.appendChild(manualOption);
+
+                companiesModal.list.innerHTML = '';
+                companies.forEach((company, index) => {
+                    const div = document.createElement('div');
+                    div.className = 'flex items-center justify-between bg-gray-100 dark:bg-gray-700 p-2 rounded';
+                    div.innerHTML = `
+                        <span class="text-sm">${company.name}</span>
+                        <button data-index="${index}" class="delete-company-btn text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></button>`;
+                    companiesModal.list.appendChild(div);
+                });
+            };
+
+            empresaSelect.addEventListener('change', () => {
+                manualCnpjContainer.classList.toggle('hidden', empresaSelect.value !== 'manual');
+            });
+
+            companiesModal.openBtn.addEventListener('click', () => companiesModal.el.classList.remove('hidden'));
+            companiesModal.closeBtn.addEventListener('click', () => companiesModal.el.classList.add('hidden'));
+            companiesModal.form.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const name = companiesModal.nameInput.value.trim();
+                const cnpj = companiesModal.cnpjInput.value.trim().replace(/\D/g, '');
+                if (name && cnpj.length === 14) {
+                    companies.push({ name, cnpj });
+                    saveCompanies();
+                    renderCompanyUI();
+                    companiesModal.form.reset();
+                } else {
+                    showError('Dados Inválidos', 'Preencha o nome e um CNPJ válido com 14 dígitos.');
+                }
+            });
+            companiesModal.list.addEventListener('click', (e) => {
+                if (e.target.closest('.delete-company-btn')) {
+                    const index = e.target.closest('.delete-company-btn').dataset.index;
+                    companies.splice(index, 1);
+                    saveCompanies();
+                    renderCompanyUI();
+                }
+            });
+
+            // --- Lógica de Gerenciamento de Padrões ---
+            const savePatterns = () => localStorage.setItem('esocial_renamer_patterns', JSON.stringify(namingPatterns));
+
+            const loadPatterns = () => {
+                const stored = localStorage.getItem('esocial_renamer_patterns');
+                namingPatterns = stored ? JSON.parse(stored) : [
+                    { name: "Envio Grupo Rio Mar", value: "[prefixo]_[cnpj]_[data]_[cpf]_[matricula]" },
+                    { name: "Padrão SOC (Alternativo)", value: "[prefixo]-[cnpj]-[cpf]-[matricula]" },
+                    { name: "Invertido (Matrícula Primeiro)", value: "[matricula]_[cpf]_[prefixo]_[cnpj]_[data]" }
+                ];
+                renderPatternUI();
+            };
+
+            const renderPatternUI = () => {
+                namingPatternSelect.innerHTML = '';
+                namingPatterns.forEach(pattern => {
+                    const option = document.createElement('option');
+                    option.value = pattern.value;
+                    option.textContent = pattern.name;
+                    namingPatternSelect.appendChild(option);
+                });
+
+                patternsModal.list.innerHTML = '';
+                namingPatterns.forEach((pattern, index) => {
+                    const div = document.createElement('div');
+                    div.className = 'flex items-center justify-between bg-gray-100 dark:bg-gray-700 p-2 rounded';
+                    div.innerHTML = `
+                        <div>
+                            <p class="text-sm font-semibold">${pattern.name}</p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">${pattern.value}</p>
+                        </div>
+                        <button data-index="${index}" class="delete-pattern-btn text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></button>`;
+                    patternsModal.list.appendChild(div);
+                });
+                updatePatternPreview();
+            };
+            
+            function updatePatternPreview() {
+                patternPreview.textContent = namingPatternSelect.value ? namingPatternSelect.value : "Crie ou selecione um padrão acima.";
+            }
+            
+            namingPatternSelect.addEventListener('change', updatePatternPreview);
+
+            patternsModal.openBtn.addEventListener('click', () => patternsModal.el.classList.remove('hidden'));
+            patternsModal.closeBtn.addEventListener('click', () => patternsModal.el.classList.add('hidden'));
+            patternsModal.form.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const name = patternsModal.nameInput.value.trim();
+                const value = patternsModal.valueInput.value.trim();
+                if (name && value) {
+                    namingPatterns.push({ name, value });
+                    savePatterns();
+                    renderPatternUI();
+                    patternsModal.form.reset();
+                } else {
+                    showError('Dados Inválidos', 'Preencha o nome e o valor do padrão.');
+                }
+            });
+            patternsModal.list.addEventListener('click', (e) => {
+                if (e.target.closest('.delete-pattern-btn')) {
+                    const index = e.target.closest('.delete-pattern-btn').dataset.index;
+                    namingPatterns.splice(index, 1);
+                    savePatterns();
+                    renderPatternUI();
+                }
+            });
+
+            // --- Lógica da Planilha ---
+            spreadsheetInput.addEventListener('change', handleSpreadsheet);
+
+            function handleSpreadsheet(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const data = new Uint8Array(e.target.result);
+                        const workbook = XLSX.read(data, { type: 'array' });
+                        const firstSheetName = workbook.SheetNames[0];
+                        const worksheet = workbook.Sheets[firstSheetName];
+                        const json = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+                        
+                        socEmployeesData.clear();
+                        let cpfColumnIndex = -1;
+                        let nameColumnIndex = -1;
+                        let headerRowIndex = -1;
+
+                        if (json.length > 0) {
+                            for (let i = 0; i < Math.min(5, json.length); i++) {
+                                const headers = json[i].map(h => String(h).trim().toUpperCase());
+                                const tempCpfIndex = headers.indexOf('CPF');
+                                const tempNameIndex = headers.indexOf('NOME FUNCIONÁRIO');
+                                
+                                if (tempCpfIndex !== -1 && tempNameIndex !== -1) {
+                                    cpfColumnIndex = tempCpfIndex;
+                                    nameColumnIndex = tempNameIndex;
+                                    headerRowIndex = i;
+                                    break;
+                                }
+                            }
+                        }
+
+                        if (cpfColumnIndex === -1 || nameColumnIndex === -1) {
+                            showError('Colunas não encontradas', 'Não foi possível encontrar as colunas "CPF" e "Nome Funcionário" na planilha.');
+                            spreadsheetStatus.textContent = 'Erro ao ler planilha.';
+                            return;
+                        }
+
+                        for (let i = headerRowIndex + 1; i < json.length; i++) {
+                            const row = json[i];
+                            if (row[cpfColumnIndex] && row[nameColumnIndex]) {
+                                const cpf = String(row[cpfColumnIndex]).replace(/\D/g, '').padStart(11, '0');
+                                const name = String(row[nameColumnIndex]);
+                                socEmployeesData.set(cpf, { name, hasS2220: false, hasS2240: false });
+                            }
+                        }
+                        
+                        spreadsheetStatus.textContent = `${socEmployeesData.size} funcionários carregados.`;
+                        
+                        // Re-avalia os ficheiros já processados com os novos dados da planilha
+                        if (processedFiles.length > 0) {
+                             processedFiles.forEach(file => {
+                                if (!file.error && socEmployeesData.has(file.cpf)) {
+                                    const employee = socEmployeesData.get(file.cpf);
+                                    if (file.eventType === 'S-2220') employee.hasS2220 = true;
+                                    if (file.eventType === 'S-2240') employee.hasS2240 = true;
+                                }
+                            });
+                        }
+
+                        updateEmployeeStatusUI();
+                        updateFileListUI();
+                    } catch (err) {
+                        showError('Erro ao ler planilha', `Ocorreu um erro: ${err.message}`);
+                        spreadsheetStatus.textContent = 'Erro ao ler planilha.';
+                    }
+                };
+                reader.readAsArrayBuffer(file);
+            }
+
+            // --- Funções de Validação ---
+            function validaCPF(cpf) {
+                cpf = String(cpf).replace(/[^\d]+/g, '');
+                if (cpf === '' || cpf.length !== 11 || /^(\d)\1{10}$/.test(cpf)) return false;
+                let soma = 0, resto;
+                for (let i = 1; i <= 9; i++) soma += parseInt(cpf.substring(i - 1, i)) * (11 - i);
+                resto = (soma * 10) % 11;
+                if ((resto === 10) || (resto === 11)) resto = 0;
+                if (resto !== parseInt(cpf.substring(9, 10))) return false;
+                soma = 0;
+                for (let i = 1; i <= 10; i++) soma += parseInt(cpf.substring(i - 1, i)) * (12 - i);
+                resto = (soma * 10) % 11;
+                if ((resto === 10) || (resto === 11)) resto = 0;
+                if (resto !== parseInt(cpf.substring(10, 11))) return false;
+                return true;
+            }
+
+            function validateCrossFileData(files) {
+                const filesByCpf = {};
+                files.forEach(file => {
+                    if (!file.error && file.cpf !== 'SEM_CPF') {
+                        if (!filesByCpf[file.cpf]) filesByCpf[file.cpf] = [];
+                        filesByCpf[file.cpf].push(file);
+                    }
+                });
+
+                for (const cpf in filesByCpf) {
+                    const group = filesByCpf[cpf];
+                    if (group.length > 1) {
+                        const firstMatricula = group[0].matricula;
+                        const isConsistent = group.every(file => file.matricula === firstMatricula);
+                        if (!isConsistent) {
+                            group.forEach(file => file.hasInconsistency = true);
+                        }
+                    }
+                }
+                return files;
+            }
+
+
+            // --- Funções de UI ---
+            function showError(title, message) {
+                errorModal.title.textContent = title;
+                errorModal.message.textContent = message;
+                errorModal.el.classList.remove('hidden');
+                errorModal.el.classList.add('flex');
+            }
+
+            function closeErrorModal() {
+                errorModal.el.classList.add('hidden');
+                errorModal.el.classList.remove('flex');
+            }
+
+            function updateFileListUI() {
+                if (processedFiles.length === 0) {
+                    fileListContainer.classList.add('hidden');
+                    updateButtonStates();
+                    return;
+                }
+                fileListContainer.classList.remove('hidden');
+
+                const s2220List = document.getElementById('s2220-list');
+                const s2240List = document.getElementById('s2240-list');
+                const errorList = document.getElementById('error-list');
+                const s2220Count = document.getElementById('s2220-count');
+                const s2240Count = document.getElementById('s2240-count');
+                const errorCount = document.getElementById('error-count');
+                const s2220Section = document.getElementById('s2220-section');
+                const s2240Section = document.getElementById('s2240-section');
+                const errorSection = document.getElementById('error-section');
+
+                s2220List.innerHTML = '';
+                s2240List.innerHTML = '';
+                errorList.innerHTML = '';
+
+                const s2220Files = processedFiles.filter(f => f.eventType === 'S-2220' && !f.error);
+                const s2240Files = processedFiles.filter(f => f.eventType === 'S-2240' && !f.error);
+                const filesWithErrors = processedFiles.filter(f => f.error);
+
+                s2220Count.textContent = s2220Files.length;
+                s2240Count.textContent = s2240Files.length;
+                errorCount.textContent = filesWithErrors.length;
+
+                s2220Section.classList.toggle('hidden', s2220Files.length === 0);
+                s2240Section.classList.toggle('hidden', s2240Files.length === 0);
+                errorSection.classList.toggle('hidden', filesWithErrors.length === 0);
+
+                const createFileItem = (fileData) => {
+                    const fileItem = document.createElement('div');
+                    fileItem.className = 'file-item bg-gray-50 dark:bg-gray-700 p-4 rounded-lg flex items-center justify-between border border-gray-200 dark:border-gray-600';
+                    let statusIcon, statusColor, newNameHtml, actionButton, cpfWarningHtml = '', inconsistencyWarningHtml = '', socStatusHtml = '';
+                    
+                    if (fileData.error) {
+                        statusIcon = 'fas fa-exclamation-triangle'; statusColor = 'text-red-500';
+                        newNameHtml = `<p class="text-sm text-red-500 font-medium">${fileData.error}</p>`; actionButton = '';
+                    } else {
+                        statusIcon = 'fas fa-check-circle'; statusColor = 'text-green-500';
+                        newNameHtml = `<div class="flex items-center flex-wrap"><p class="text-sm font-semibold">${fileData.newName}</p></div>`;
+                        actionButton = `<a href="${URL.createObjectURL(fileData.newBlob)}" download="${fileData.newName}" class="ml-4 bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm font-semibold hover:bg-blue-200 transition flex-shrink-0"><i class="fas fa-download mr-1"></i>Baixar</a>`;
+                        if (!fileData.isCpfValid) {
+                            cpfWarningHtml = `<span class="ml-2" data-tooltip="CPF inválido"><i class="fas fa-exclamation-triangle text-yellow-500"></i></span>`;
+                        }
+                        if (fileData.hasInconsistency) {
+                            inconsistencyWarningHtml = `<span class="ml-2" data-tooltip="Inconsistência: Matrícula diferente para este CPF em outro ficheiro."><i class="fas fa-exclamation-circle text-orange-500"></i></span>`;
+                        }
+                        if (socEmployeesData.size > 0 && socEmployeesData.has(fileData.cpf)) {
+                            socStatusHtml = `<span class="ml-2" data-tooltip="Funcionário encontrado na planilha SOC."><i class="fas fa-check-double text-cyan-500"></i></span>`;
+                        }
+                    }
+
+                    fileItem.innerHTML = `
+                        <div class="flex items-center gap-4 flex-grow min-w-0">
+                            <i class="${statusIcon} ${statusColor} text-2xl"></i>
+                            <div class="flex-grow min-w-0">
+                                <p class="font-medium truncate">${fileData.originalName}</p> 
+                                <div class="flex items-center">
+                                    ${newNameHtml}
+                                    ${cpfWarningHtml}
+                                    ${inconsistencyWarningHtml}
+                                    ${socStatusHtml}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2 ml-4">${actionButton}</div>`;
+                    return fileItem;
+                };
+
+                s2220Files.forEach(fileData => s2220List.appendChild(createFileItem(fileData)));
+                s2240Files.forEach(fileData => s2240List.appendChild(createFileItem(fileData)));
+                filesWithErrors.forEach(fileData => errorList.appendChild(createFileItem(fileData)));
+                updateButtonStates();
+            }
+
+            function updateEmployeeStatusUI() {
+                const employeesWithFiles = Array.from(socEmployeesData.values()).filter(data => data.hasS2220 || data.hasS2240);
+
+                if (employeesWithFiles.length === 0) {
+                    employeeStatusContainer.classList.add('hidden');
+                    return;
+                }
+                employeeStatusContainer.classList.remove('hidden');
+                employeeStatusList.innerHTML = '';
+
+                employeesWithFiles.forEach(data => {
+                    const item = document.createElement('div');
+                    item.className = 'employee-item bg-gray-50 dark:bg-gray-700 p-3 rounded-lg flex items-center justify-between border border-gray-200 dark:border-gray-600';
+
+                    const s2220Icon = data.hasS2220 
+                        ? `<i class="fas fa-check-circle text-green-500"></i>`
+                        : `<i class="fas fa-times-circle text-gray-400"></i>`;
+                    
+                    const s2240Icon = data.hasS2240
+                        ? `<i class="fas fa-check-circle text-green-500"></i>`
+                        : `<i class="fas fa-times-circle text-gray-400"></i>`;
+
+                    item.innerHTML = `
+                        <p class="font-medium text-sm flex-grow">${data.name}</p>
+                        <div class="flex items-center gap-4 text-xs font-semibold">
+                            <span class="flex items-center gap-2">S-2220: ${s2220Icon}</span>
+                            <span class="flex items-center gap-2">S-2240: ${s2240Icon}</span>
+                        </div>
+                    `;
+                    employeeStatusList.appendChild(item);
+                });
+            }
+
+            function updateButtonStates() {
+                const hasProcessedFiles = processedFiles.some(f => !f.error);
+                const hasAnyFiles = processedFiles.length > 0;
+                downloadZipBtn.disabled = !hasProcessedFiles;
+                downloadIndividualBtn.disabled = !hasProcessedFiles;
+                downloadReportBtn.disabled = !hasAnyFiles;
+                clearListBtn.disabled = !hasAnyFiles;
+            }
+
+            // --- Event Listeners de UI ---
+            errorModal.closeBtn.addEventListener('click', closeErrorModal);
+            dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('drop-zone-active'); });
+            dropZone.addEventListener('dragleave', (e) => { e.preventDefault(); dropZone.classList.remove('drop-zone-active'); });
+            dropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('drop-zone-active');
+                handleFiles(e.dataTransfer.files);
+            });
+            dropZone.addEventListener('click', () => fileInput.click());
+            fileInput.addEventListener('change', () => handleFiles(fileInput.files));
+
+            async function handleFiles(files) {
+                let cnpjCompleto, companyName;
+                if (empresaSelect.value === 'manual') {
+                    cnpjCompleto = manualCnpjInput.value.trim().replace(/\D/g, '');
+                    if (cnpjCompleto.length !== 14) {
+                        showError('CNPJ Inválido', 'Por favor, informe um CNPJ com 14 dígitos.'); return;
+                    }
+                    companyName = `CNPJ Manual (${cnpjCompleto})`;
+                } else {
+                    if (!empresaSelect.value) {
+                        showError('Seleção Necessária', 'Por favor, escolha uma empresa ou informe o CNPJ manualmente.');
+                        fileInput.value = ''; return;
+                    }
+                    const selectedOption = empresaSelect.options[empresaSelect.selectedIndex];
+                    companyName = selectedOption.text;
+                    cnpjCompleto = selectedOption.value;
+                }
+                if (!namingPatternSelect.value) {
+                    showError('Padrão não selecionado', 'Por favor, crie ou selecione um padrão de nomenclatura.');
+                    fileInput.value = ''; return;
+                }
+                const newFiles = Array.from(files).filter(file => file.type === 'text/xml' || file.name.endsWith('.xml'));
+                if (newFiles.length === 0) {
+                    showError('Ficheiro Inválido', 'Por favor, selecione apenas ficheiros .xml.'); return;
+                }
+                const processingPromises = newFiles.map(file => processFile({ file: file, originalName: file.name }, cnpjCompleto, companyName));
+                let results = await Promise.all(processingPromises);
+                
+                results = validateCrossFileData(results);
+
+                processedFiles = [...processedFiles, ...results];
+                
+                // Atualiza o status dos funcionários da planilha com base nos ficheiros processados
+                if (socEmployeesData.size > 0) {
+                    // Reseta o status antes de re-calcular
+                    socEmployeesData.forEach(employee => {
+                        employee.hasS2220 = false;
+                        employee.hasS2240 = false;
+                    });
+
+                    processedFiles.forEach(file => {
+                        if (!file.error && socEmployeesData.has(file.cpf)) {
+                            const employee = socEmployeesData.get(file.cpf);
+                            if (file.eventType === 'S-2220') employee.hasS2220 = true;
+                            if (file.eventType === 'S-2240') employee.hasS2240 = true;
+                        }
+                    });
+                }
+
+                updateFileListUI();
+                updateEmployeeStatusUI();
+                fileInput.value = '';
+            }
+
+            async function processFile(fileData, cnpj, companyName) {
+                try {
+                    const xmlText = await fileData.file.text();
+                    const parser = new DOMParser();
+                    const xmlDoc = parser.parseFromString(xmlText, "application/xml");
+                    const parserError = xmlDoc.querySelector("parsererror");
+                    if (parserError) return { ...fileData, error: "XML mal formatado." };
+                    const getText = (selector) => xmlDoc.querySelector(selector)?.textContent || null;
+                    const eventNode = xmlDoc.querySelector('[Id]');
+                    if (!eventNode) return { ...fileData, error: "Tag de evento com 'Id' não encontrada." };
+                    const idEvento = eventNode.getAttribute('Id');
+                    const cpf = (getText("cpfTrab") || "SEM_CPF").replace(/\D/g, '').padStart(11, '0');
+                    const isCpfValid = validaCPF(cpf);
+                    const matricula = getText("matricula") || "SEM_MATRICULA";
+                    const dataHora = idEvento.substring(17, 31);
+                    let prefixo = "DESCONHECIDO", eventType = "DESCONHECIDO";
+                    const nomeDoEvento = eventNode.localName;
+                    if (nomeDoEvento === "evtMonit") { prefixo = "MST"; eventType = "S-2220"; }
+                    else if (["evtCondAmb", "evtExpRisco"].includes(nomeDoEvento)) { prefixo = "COND_AMB_TRAB"; eventType = "S-2240"; }
+                    const pattern = namingPatternSelect.value;
+                    const novoNome = pattern
+                        .replace(/\[prefixo\]/g, prefixo).replace(/\[cnpj\]/g, cnpj)
+                        .replace(/\[data\]/g, dataHora).replace(/\[cpf\]/g, cpf)
+                        .replace(/\[matricula\]/g, matricula) + '.xml';
+                    const newBlob = new Blob([xmlText], { type: 'text/xml' });
+                    return { ...fileData, newName: novoNome, newBlob, companyName, eventType, cpf, isCpfValid, matricula };
+                } catch (e) {
+                    console.error("Erro detalhado:", fileData.originalName, e);
+                    return { ...fileData, error: `Erro: ${e.message}` };
+                }
+            }
+
+            // --- Lógica de Download e Limpeza ---
+            function saveFile(blob, filename) {
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = filename;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(link.href);
+            }
+
+            downloadZipBtn.addEventListener('click', () => {
+                const zip = new JSZip();
+                const validFiles = processedFiles.filter(f => f.newBlob && !f.error);
+                if (validFiles.length === 0) return;
+                const organizeInFolders = organizeFoldersCheckbox.checked;
+                validFiles.forEach(fileData => {
+                    let path = '';
+                    if (organizeInFolders) {
+                        const companyFullName = fileData.companyName;
+                        const firstName = companyFullName.split(' ')[0];
+                        const cnpjEnding = companyFullName.match(/\(([^)]+)\)/)?.[1] || '';
+                        path += `${firstName} ${cnpjEnding}`.trim() + '/';
+                        path += fileData.eventType + '/';
+                    }
+                    zip.file(path + fileData.newName, fileData.newBlob);
+                });
+                zip.generateAsync({ type: "blob" }).then(content => {
+                    saveFile(content, `eSocial_Renomeados_${Date.now()}.zip`);
+                });
+            });
+
+            downloadIndividualBtn.addEventListener('click', () => {
+                const validFiles = processedFiles.filter(f => f.newBlob && !f.error);
+                if (validFiles.length === 0) return;
+                validFiles.forEach((fileData, index) => {
+                    setTimeout(() => {
+                        saveFile(fileData.newBlob, fileData.newName);
+                    }, index * 200);
+                });
+            });
+            
+            downloadReportBtn.addEventListener('click', () => {
+                const wb = XLSX.utils.book_new();
+
+                // Aba 1: Relatório de Ficheiros
+                if (processedFiles.length > 0) {
+                    const reportData = processedFiles.map(file => ({
+                        "Nome Original": file.originalName,
+                        "Novo Nome": file.newName || 'N/A',
+                        "Status": file.error ? `ERRO: ${file.error}` : 'Sucesso',
+                        "CPF": file.cpf || 'N/A',
+                        "Status CPF": file.error ? 'N/A' : (file.isCpfValid ? 'Válido' : 'Inválido'),
+                        "Matricula": file.matricula || 'N/A',
+                        "Tipo de Evento": file.eventType || 'N/A',
+                        "Inconsistência": file.hasInconsistency ? 'Matrícula divergente' : 'N/A',
+                        "Encontrado na Planilha": socEmployeesData.has(file.cpf) ? 'Sim' : 'Não'
+                    }));
+                    const ws1 = XLSX.utils.json_to_sheet(reportData);
+                    XLSX.utils.book_append_sheet(wb, ws1, "Relatório de Ficheiros");
+                }
+
+                // Aba 2: Status de Envios por Funcionário
+                const employeesWithFiles = Array.from(socEmployeesData.entries())
+                    .filter(([cpf, data]) => data.hasS2220 || data.hasS2240)
+                    .map(([cpf, data]) => ({
+                        "Nome Funcionário": data.name,
+                        "CPF": cpf,
+                        "Envio S-2220": data.hasS2220 ? "Sim" : "Não",
+                        "Envio S-2240": data.hasS2240 ? "Sim" : "Não"
+                    }));
+
+                if (employeesWithFiles.length > 0) {
+                    const ws2 = XLSX.utils.json_to_sheet(employeesWithFiles);
+                    XLSX.utils.book_append_sheet(wb, ws2, "Status de Envios por Funcionário");
+                }
+                
+                if (wb.SheetNames.length > 0) {
+                    XLSX.writeFile(wb, `Relatorio_eSocial_${Date.now()}.xlsx`);
+                } else {
+                    showError('Nenhum dado para exportar', 'Processe alguns ficheiros ou carregue uma planilha com funcionários correspondentes.');
+                }
+            });
+
+            clearListBtn.addEventListener('click', () => {
+                processedFiles = [];
+                socEmployeesData.clear();
+                spreadsheetStatus.textContent = 'Nenhuma planilha carregada.';
+                spreadsheetInput.value = '';
+                updateFileListUI();
+                updateEmployeeStatusUI();
+            });
+
+            // --- Inicialização da Aplicação ---
+            applyTheme();
+            loadCompanies();
+            loadPatterns();
+            updateButtonStates();
+        });
+    </script>
+</body>
+</html>
