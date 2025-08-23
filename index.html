@@ -1,13 +1,14 @@
 <!DOCTYPE html>
-<html lang="pt-BR" class=""> <head>
+<html lang="pt-BR" class=""> <!-- A classe 'dark' será adicionada aqui pelo JS -->
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Renomeador de Ficheiros eSocial (S-2220 / S-2240)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script> <script>
-        // Configuração do Tailwind para o Modo Escuro
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script>
         tailwind.config = {
             darkMode: 'class',
         }
@@ -16,24 +17,15 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         body {
             font-family: 'Inter', sans-serif;
-            transition: background-color 0.3s, color 0.3s;
-        }
-        .file-item, .employee-item {
-            transition: all 0.2s ease-in-out;
-        }
-        .file-item:hover, .employee-item:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
         .drop-zone-active {
-            border-color: #3b82f6;
-            background-color: #eff6ff;
+            border-color: #3b82f6; /* blue-500 */
+            background-color: #eff6ff; /* blue-50 */
         }
         .dark .drop-zone-active {
-            border-color: #60a5fa;
-            background-color: #1e293b;
+            border-color: #60a5fa; /* blue-400 */
+            background-color: #1e293b; /* slate-800 */
         }
-        /* Estilo para o tooltip */
         [data-tooltip]:hover::after {
             content: attr(data-tooltip);
             position: absolute;
@@ -41,7 +33,7 @@
             left: 50%;
             transform: translateX(-50%);
             margin-bottom: 5px;
-            background-color: #333;
+            background-color: #1e293b; /* slate-800 */
             color: #fff;
             padding: 5px 10px;
             border-radius: 5px;
@@ -52,102 +44,101 @@
         [data-tooltip] {
             position: relative;
         }
-        /* Scrollbar customizada para as listas */
         .custom-scrollbar::-webkit-scrollbar {
             width: 8px;
         }
         .custom-scrollbar::-webkit-scrollbar-track {
-            background: #f1f5f9;
-        }
-        .dark .custom-scrollbar::-webkit-scrollbar-track {
-            background: #1e293b;
+            background: transparent;
         }
         .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: #94a3b8;
+            background: #94a3b8; /* slate-400 */
             border-radius: 10px;
+            border: 2px solid #f1f5f9; /* slate-100 */
         }
         .dark .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: #475569;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-            background: #64748b;
-        }
-        .dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-            background: #64748b;
+            background: #475569; /* slate-600 */
+            border-color: #1e293b; /* slate-800 */
         }
     </style>
 </head>
-<body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 min-h-screen p-4 sm:p-6 lg:p-8">
+<body class="bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-200 min-h-screen p-4 sm:p-6 lg:p-8 transition-colors duration-300">
 
-    <div class="w-full max-w-7xl mx-auto bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 md:p-8 relative">
+    <div class="w-full max-w-7xl mx-auto bg-white dark:bg-slate-800 rounded-2xl shadow-xl p-6 md:p-8 relative">
         
         <div class="absolute top-4 right-4 z-10">
-            <button id="theme-toggle" class="p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 transition">
+            <button id="theme-toggle" class="p-2 rounded-full text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-slate-800 transition">
                 <i id="theme-toggle-dark-icon" class="fas fa-moon text-lg hidden"></i>
                 <i id="theme-toggle-light-icon" class="fas fa-sun text-lg hidden"></i>
             </button>
         </div>
 
-        <header class="text-center mb-8">
-            <h1 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white">Renomeador de Ficheiros eSocial</h1>
-            <p class="text-gray-500 dark:text-gray-400 mt-2">Automatize a renomeação dos eventos S-2220 e S-2240 de forma rápida e intuitiva.</p>
+        <header class="text-center mb-10">
+            <h1 class="text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-cyan-500 dark:from-blue-400 dark:to-cyan-300 pb-2">
+                Renomeador eSocial
+            </h1>
+            <p class="text-slate-500 dark:text-slate-400 mt-2">Automatize a renomeação dos eventos S-2220 e S-2240 de forma rápida e intuitiva.</p>
         </header>
 
         <main class="grid grid-cols-1 lg:grid-cols-5 lg:gap-10">
 
+            <!-- COLUNA ESQUERDA: Configuração e Uploads -->
             <div class="lg:col-span-3 space-y-8">
                 
-                <div class="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
-                    <div class="flex justify-between items-center mb-4">
-                        <label for="empresa" class="block text-lg font-semibold text-gray-700 dark:text-gray-300">
-                            <span class="bg-blue-600 text-white rounded-full w-8 h-8 inline-flex items-center justify-center mr-3">1</span>Selecione a Empresa
-                        </label>
-                        <button id="manage-companies-btn" class="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-semibold">
-                            <i class="fas fa-cog mr-1"></i>Gerir
-                        </button>
-                    </div>
-                    <select id="empresa" class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
-                        <option value="" disabled selected>Escolha uma opção...</option>
-                    </select>
-                    <div id="manual-cnpj-container" class="mt-4 hidden">
-                        <label for="manual-cnpj-input" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Informe o CNPJ (apenas números)</label>
-                        <input type="text" id="manual-cnpj-input" maxlength="14" class="mt-1 w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" placeholder="Digite os 14 dígitos do CNPJ">
+                <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 border-t-4 border-t-blue-500 shadow-sm">
+                    <div class="p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <label for="empresa" class="block text-lg font-semibold text-slate-700 dark:text-slate-300">
+                                <span class="bg-gradient-to-br from-blue-600 to-indigo-700 text-white rounded-full w-8 h-8 inline-flex items-center justify-center mr-3">1</span>Selecione a Empresa
+                            </label>
+                            <button id="manage-companies-btn" class="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-semibold">
+                                <i class="fas fa-cog mr-1"></i>Gerir
+                            </button>
+                        </div>
+                        <select id="empresa" class="w-full p-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-slate-50 dark:bg-slate-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+                            <option value="" disabled selected>Escolha uma opção...</option>
+                        </select>
+                        <div id="manual-cnpj-container" class="mt-4 hidden">
+                            <label for="manual-cnpj-input" class="block text-sm font-medium text-slate-600 dark:text-slate-400">Informe o CNPJ (apenas números)</label>
+                            <input type="text" id="manual-cnpj-input" maxlength="14" class="mt-1 w-full p-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-slate-50 dark:bg-slate-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" placeholder="Digite os 14 dígitos do CNPJ">
+                        </div>
                     </div>
                 </div>
 
-                <div class="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
-                    <div class="flex justify-between items-center mb-4">
-                        <label for="naming-pattern-select" class="block text-lg font-semibold text-gray-700 dark:text-gray-300">
-                            <span class="bg-blue-600 text-white rounded-full w-8 h-8 inline-flex items-center justify-center mr-3">2</span>Selecione o Padrão
-                        </label>
-                        <button id="manage-patterns-btn" class="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-semibold">
-                            <i class="fas fa-edit mr-1"></i>Gerir
-                        </button>
+                <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 border-t-4 border-t-blue-500 shadow-sm">
+                    <div class="p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <label for="naming-pattern-select" class="block text-lg font-semibold text-slate-700 dark:text-slate-300">
+                                <span class="bg-gradient-to-br from-blue-600 to-indigo-700 text-white rounded-full w-8 h-8 inline-flex items-center justify-center mr-3">2</span>Selecione o Padrão
+                            </label>
+                            <button id="manage-patterns-btn" class="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-semibold">
+                                <i class="fas fa-edit mr-1"></i>Gerir
+                            </button>
+                        </div>
+                        <select id="naming-pattern-select" class="w-full p-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-slate-50 dark:bg-slate-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"></select>
+                        <div class="mt-3">
+                            <p class="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Pré-visualização:</p>
+                            <p id="pattern-preview" class="text-sm text-slate-800 dark:text-slate-200 bg-slate-100 dark:bg-slate-900/50 p-3 rounded-lg font-mono border border-slate-200 dark:border-slate-700 truncate"></p>
+                        </div>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-2">Placeholders: [prefixo], [cnpj], [data], [cpf], [matricula]</p>
                     </div>
-                    <select id="naming-pattern-select" class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"></select>
-                    <div class="mt-3">
-                        <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Pré-visualização:</p>
-                        <p id="pattern-preview" class="text-sm text-gray-800 dark:text-gray-200 bg-gray-100 dark:bg-gray-900 p-3 rounded-lg font-mono border border-gray-200 dark:border-gray-700 truncate"></p>
-                    </div>
-                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">Placeholders: [prefixo], [cnpj], [data], [cpf], [matricula]</p>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <h2 class="text-lg font-semibold mb-3 text-gray-700 dark:text-gray-300"><span class="bg-blue-600 text-white rounded-full w-8 h-8 inline-flex items-center justify-center mr-3">3</span>Ficheiros XML</h2>
-                        <div id="drop-zone" class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-6 text-center cursor-pointer transition hover:bg-gray-50 dark:hover:bg-gray-700 h-full flex flex-col justify-center items-center">
-                            <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 dark:text-gray-500 mb-3"></i>
-                            <p class="text-gray-600 dark:text-gray-300 font-semibold">Arraste e solte</p>
-                            <p class="text-gray-500 dark:text-gray-400 text-sm mt-1">ou <span class="text-blue-600 dark:text-blue-400 font-semibold">clique aqui</span></p>
+                        <h2 class="text-lg font-semibold mb-3 text-slate-700 dark:text-slate-300"><span class="bg-gradient-to-br from-blue-600 to-indigo-700 text-white rounded-full w-8 h-8 inline-flex items-center justify-center mr-3">3</span>Ficheiros XML</h2>
+                        <div id="drop-zone" class="border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-xl p-6 text-center cursor-pointer transition hover:bg-slate-50 dark:hover:bg-slate-700/50 h-full flex flex-col justify-center items-center">
+                            <i class="fas fa-file-code text-4xl text-blue-500 dark:text-blue-400 mb-3"></i>
+                            <p class="text-slate-600 dark:text-slate-300 font-semibold">Arraste e solte</p>
+                            <p class="text-slate-500 dark:text-slate-400 text-sm mt-1">ou <span class="text-blue-600 dark:text-blue-400 font-semibold">clique aqui</span></p>
                             <input type="file" id="file-input" multiple accept=".xml" class="hidden">
                         </div>
                     </div>
                     <div>
-                        <h2 class="text-lg font-semibold mb-3 text-gray-700 dark:text-gray-300"><span class="bg-gray-500 text-white rounded-full w-8 h-8 inline-flex items-center justify-center mr-3">4</span>Planilha (Opcional)</h2>
-                        <div id="spreadsheet-drop-zone" class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-6 text-center cursor-pointer transition hover:bg-gray-50 dark:hover:bg-gray-700 h-full flex flex-col justify-center items-center">
-                             <i class="fas fa-file-excel text-4xl text-gray-400 dark:text-gray-500 mb-3"></i>
-                             <p class="text-gray-600 dark:text-gray-300 font-semibold">Arraste e solte</p>
-                             <p id="spreadsheet-status" class="mt-1 text-sm font-medium text-gray-600 dark:text-gray-300 truncate">ou clique para selecionar</p>
+                        <h2 class="text-lg font-semibold mb-3 text-slate-700 dark:text-slate-300"><span class="bg-slate-500 text-white rounded-full w-8 h-8 inline-flex items-center justify-center mr-3">4</span>Planilha (Opcional)</h2>
+                        <div id="spreadsheet-drop-zone" class="border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-xl p-6 text-center cursor-pointer transition hover:bg-slate-50 dark:hover:bg-slate-700/50 h-full flex flex-col justify-center items-center">
+                             <i class="fas fa-file-excel text-4xl text-green-500 dark:text-green-400 mb-3"></i>
+                             <p class="text-slate-600 dark:text-slate-300 font-semibold">Arraste e solte</p>
+                             <p id="spreadsheet-status" class="mt-1 text-sm font-medium text-slate-600 dark:text-slate-300 truncate">ou clique para selecionar</p>
                              <input type="file" id="spreadsheet-input" accept=".xls, .xlsx" class="hidden">
                         </div>
                     </div>
@@ -155,53 +146,54 @@
 
             </div>
 
-            <div class="lg:col-span-2 mt-8 lg:mt-0 space-y-6 flex flex-col">
-                <div class="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
-                    <h2 class="text-lg font-semibold mb-4 text-gray-700 dark:text-gray-300"><span class="bg-blue-600 text-white rounded-full w-8 h-8 inline-flex items-center justify-center mr-3">5</span>Descarregue os Ficheiros</h2>
+            <!-- COLUNA DIREITA: Ações e Resultados -->
+            <div class="lg:col-span-2 mt-8 lg:mt-0 flex flex-col">
+                <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 border-t-4 border-t-blue-500 shadow-sm p-6 mb-6">
+                    <h2 class="text-lg font-semibold mb-4 text-slate-700 dark:text-slate-300"><span class="bg-gradient-to-br from-blue-600 to-indigo-700 text-white rounded-full w-8 h-8 inline-flex items-center justify-center mr-3">5</span>Ações Finais</h2>
                     <div class="grid grid-cols-2 gap-3">
-                        <button id="download-zip-btn" class="bg-indigo-600 text-white font-bold py-3 px-4 rounded-lg shadow-md hover:bg-indigo-700 transition disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                        <button id="download-zip-btn" class="bg-indigo-600 text-white font-bold py-3 px-4 rounded-lg shadow-md hover:bg-indigo-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
                             <i class="fas fa-file-archive"></i>.zip
                         </button>
-                         <button id="download-individual-btn" class="bg-cyan-600 text-white font-bold py-3 px-4 rounded-lg shadow-md hover:bg-cyan-700 transition disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                         <button id="download-individual-btn" class="bg-cyan-600 text-white font-bold py-3 px-4 rounded-lg shadow-md hover:bg-cyan-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
                             <i class="fas fa-download"></i>Individuais
                         </button>
-                        <button id="download-report-btn" class="bg-green-600 text-white font-bold py-3 px-4 rounded-lg shadow-md hover:bg-green-700 transition disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                        <button id="download-report-btn" class="bg-emerald-600 text-white font-bold py-3 px-4 rounded-lg shadow-md hover:bg-emerald-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
                             <i class="fas fa-file-alt"></i>Relatório
                         </button>
-                        <button id="clear-list-btn" class="bg-red-600 text-white font-bold py-3 px-4 rounded-lg shadow-md hover:bg-red-700 transition disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                        <button id="clear-list-btn" class="bg-rose-600 text-white font-bold py-3 px-4 rounded-lg shadow-md hover:bg-rose-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
                             <i class="fas fa-trash"></i>Limpar
                         </button>
                     </div>
                     <div class="mt-4 flex items-center justify-center">
-                        <input type="checkbox" id="organize-folders-checkbox" class="h-4 w-4 rounded border-gray-300 dark:border-gray-500 text-indigo-600 focus:ring-indigo-500" checked>
-                        <label for="organize-folders-checkbox" class="ml-2 block text-sm text-gray-900 dark:text-gray-300">Organizar .zip em subpastas</label>
+                        <input type="checkbox" id="organize-folders-checkbox" class="h-4 w-4 rounded border-slate-300 dark:border-slate-500 text-indigo-600 focus:ring-indigo-500" checked>
+                        <label for="organize-folders-checkbox" class="ml-2 block text-sm text-slate-700 dark:text-slate-300">Organizar .zip em subpastas</label>
                     </div>
                 </div>
 
-                <div id="results-panel" class="bg-gray-50 dark:bg-gray-800/50 p-6 rounded-xl border border-gray-200 dark:border-gray-700 flex-grow min-h-0 flex flex-col">
-                    <h3 class="text-xl font-semibold mb-4 text-gray-800 dark:text-white flex-shrink-0">Resultados do Processamento</h3>
-                    <div class="flex-grow min-h-0 overflow-y-auto custom-scrollbar pr-2">
-                         <div id="file-list-container" class="hidden">
-                             <div id="s2220-section" class="mb-6 hidden">
-                                 <h3 class="text-lg font-semibold mb-3">Evento S-2220 (<span id="s2220-count">0</span>)</h3>
+                <div class="bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700 flex-grow flex flex-col min-h-0">
+                    <h3 class="text-xl font-semibold p-6 pb-4 text-slate-800 dark:text-white flex-shrink-0">Resultados do Processamento</h3>
+                    <div class="flex-grow min-h-0 overflow-y-auto custom-scrollbar px-6 pb-6">
+                        <div id="file-list-container" class="hidden space-y-6">
+                             <div id="s2220-section" class="hidden">
+                                 <h3 class="text-lg font-semibold mb-3 text-cyan-700 dark:text-cyan-400">Evento S-2220 (<span id="s2220-count">0</span>)</h3>
                                  <div id="s2220-list" class="space-y-2"></div>
                              </div>
-                             <div id="s2240-section" class="mb-6 hidden">
-                                 <h3 class="text-lg font-semibold mb-3">Evento S-2240 (<span id="s2240-count">0</span>)</h3>
+                             <div id="s2240-section" class="hidden">
+                                 <h3 class="text-lg font-semibold mb-3 text-teal-700 dark:text-teal-400">Evento S-2240 (<span id="s2240-count">0</span>)</h3>
                                  <div id="s2240-list" class="space-y-2"></div>
                              </div>
-                             <div id="error-section" class="mb-6 hidden">
-                                 <h3 class="text-lg font-semibold mb-3 text-red-500">Ficheiros com Erro (<span id="error-count">0</span>)</h3>
+                             <div id="error-section" class="hidden">
+                                 <h3 class="text-lg font-semibold mb-3 text-rose-500 dark:text-rose-400">Ficheiros com Erro (<span id="error-count">0</span>)</h3>
                                  <div id="error-list" class="space-y-2"></div>
                              </div>
                         </div>
 
                         <div id="employee-status-container" class="mt-4 hidden">
-                             <h3 class="text-lg font-semibold mb-3 text-gray-800 dark:text-white">Status de Envio (Planilha)</h3>
+                             <h3 class="text-lg font-semibold mb-3 text-slate-800 dark:text-white">Status de Envio (Planilha)</h3>
                              <div id="employee-status-list" class="space-y-2"></div>
                         </div>
 
-                        <div id="no-files-message" class="text-center text-gray-500 dark:text-gray-400 py-10">
+                        <div id="no-files-message" class="text-center text-slate-500 dark:text-slate-400 py-10 h-full flex flex-col justify-center items-center">
                             <i class="fas fa-list-alt text-4xl mb-4"></i>
                             <p>Os seus ficheiros processados aparecerão aqui.</p>
                         </div>
@@ -211,14 +203,15 @@
         </main>
     </div>
 
+    <!-- MODAIS -->
     <div id="error-modal" class="fixed inset-0 bg-black bg-opacity-60 hidden items-center justify-center p-4 z-50">
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-2xl p-6 max-w-sm w-full text-center">
-            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
-                <i class="fas fa-times text-2xl text-red-600"></i>
+        <div class="bg-white dark:bg-slate-800 rounded-lg shadow-2xl p-6 max-w-sm w-full text-center">
+            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 dark:bg-red-900/50">
+                <i class="fas fa-times text-2xl text-red-600 dark:text-red-400"></i>
             </div>
-            <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white mt-4" id="error-title">Erro</h3>
+            <h3 class="text-lg leading-6 font-medium text-slate-900 dark:text-white mt-4" id="error-title">Erro</h3>
             <div class="mt-2 px-7 py-3">
-                <p class="text-sm text-gray-500 dark:text-gray-400" id="error-message">Ocorreu um erro.</p>
+                <p class="text-sm text-slate-500 dark:text-slate-400" id="error-message">Ocorreu um erro.</p>
             </div>
             <div class="items-center px-4 py-3">
                 <button id="close-error-modal-btn" class="px-4 py-2 bg-red-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-300">
@@ -229,22 +222,22 @@
     </div>
 
     <div id="companies-modal" class="fixed inset-0 bg-black bg-opacity-60 hidden items-center justify-center p-4 z-50">
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-2xl p-6 w-full max-w-md">
-            <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4">Gerir Empresas</h3>
+        <div class="bg-white dark:bg-slate-800 rounded-lg shadow-2xl p-6 w-full max-w-md">
+            <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-4">Gerir Empresas</h3>
             <form id="add-company-form" class="space-y-4 mb-6">
                 <div>
-                    <label for="company-name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Nome da Empresa</label>
-                    <input type="text" id="company-name" placeholder="Ex: Minha Empresa (0001-00)" required class="mt-1 w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700">
+                    <label for="company-name" class="block text-sm font-medium text-slate-700 dark:text-slate-300">Nome da Empresa</label>
+                    <input type="text" id="company-name" placeholder="Ex: Minha Empresa (0001-00)" required class="mt-1 w-full p-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-slate-50 dark:bg-slate-700">
                 </div>
                 <div>
-                    <label for="company-cnpj" class="block text-sm font-medium text-gray-700 dark:text-gray-300">CNPJ (apenas números)</label>
-                    <input type="text" id="company-cnpj" placeholder="12345678000100" maxlength="14" required class="mt-1 w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700">
+                    <label for="company-cnpj" class="block text-sm font-medium text-slate-700 dark:text-slate-300">CNPJ (apenas números)</label>
+                    <input type="text" id="company-cnpj" placeholder="12345678000100" maxlength="14" required class="mt-1 w-full p-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-slate-50 dark:bg-slate-700">
                 </div>
                 <button type="submit" class="w-full bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700">Adicionar Empresa</button>
             </form>
             <div id="company-list" class="space-y-2 max-h-60 overflow-y-auto custom-scrollbar pr-2"></div>
             <div class="mt-6 text-right">
-                <button id="close-companies-modal-btn" class="px-4 py-2 bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-200 font-medium rounded-md hover:bg-gray-300 dark:hover:bg-gray-500">
+                <button id="close-companies-modal-btn" class="px-4 py-2 bg-slate-200 dark:bg-slate-600 text-slate-800 dark:text-slate-200 font-medium rounded-md hover:bg-slate-300 dark:hover:bg-slate-500">
                     Fechar
                 </button>
             </div>
@@ -252,39 +245,100 @@
     </div>
 
     <div id="patterns-modal" class="fixed inset-0 bg-black bg-opacity-60 hidden items-center justify-center p-4 z-50">
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-2xl p-6 w-full max-w-md">
-            <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4">Gerir Padrões de Nomenclatura</h3>
+        <div class="bg-white dark:bg-slate-800 rounded-lg shadow-2xl p-6 w-full max-w-md">
+            <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-4">Gerir Padrões de Nomenclatura</h3>
             <form id="add-pattern-form" class="space-y-4 mb-6">
                 <div>
-                    <label for="pattern-name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Nome do Padrão</label>
-                    <input type="text" id="pattern-name" placeholder="Ex: Padrão SOC" required class="mt-1 w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700">
+                    <label for="pattern-name" class="block text-sm font-medium text-slate-700 dark:text-slate-300">Nome do Padrão</label>
+                    <input type="text" id="pattern-name" placeholder="Ex: Padrão SOC" required class="mt-1 w-full p-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-slate-50 dark:bg-slate-700">
                 </div>
                 <div>
-                    <label for="pattern-value" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Padrão</label>
-                    <input type="text" id="pattern-value" placeholder="[prefixo]_[cnpj]_[data]_[cpf]_[matricula]" required class="mt-1 w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700">
+                    <label for="pattern-value" class="block text-sm font-medium text-slate-700 dark:text-slate-300">Padrão</label>
+                    <input type="text" id="pattern-value" placeholder="[prefixo]_[cnpj]_[data]_[cpf]_[matricula]" required class="mt-1 w-full p-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-slate-50 dark:bg-slate-700">
                 </div>
                 <button type="submit" class="w-full bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700">Adicionar Padrão</button>
             </form>
             <div id="pattern-list" class="space-y-2 max-h-60 overflow-y-auto custom-scrollbar pr-2"></div>
             <div class="mt-6 text-right">
-                <button id="close-patterns-modal-btn" class="px-4 py-2 bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-200 font-medium rounded-md hover:bg-gray-300 dark:hover:bg-gray-500">
+                <button id="close-patterns-modal-btn" class="px-4 py-2 bg-slate-200 dark:bg-slate-600 text-slate-800 dark:text-slate-200 font-medium rounded-md hover:bg-slate-300 dark:hover:bg-slate-500">
                     Fechar
                 </button>
             </div>
         </div>
     </div>
 
+    <!-- NOVO: MODAL DO MANUAL -->
+    <div id="manual-modal" class="fixed inset-0 bg-black bg-opacity-70 hidden items-center justify-center p-4 z-50">
+        <div class="bg-white dark:bg-slate-800 rounded-lg shadow-2xl p-6 w-full max-w-2xl transform transition-all">
+            <div class="text-center">
+                <i class="fas fa-rocket text-4xl text-blue-500 dark:text-blue-400"></i>
+                <h2 class="text-2xl font-bold text-slate-900 dark:text-white mt-4 mb-2">Bem-vindo ao Renomeador eSocial!</h2>
+                <p class="text-slate-600 dark:text-slate-400 mb-6">Esta ferramenta foi criada para simplificar a sua vida, renomeando ficheiros XML dos eventos S-2220 e S-2240 do eSocial para um padrão que facilite a organização e o envio.</p>
+            </div>
+            
+            <div class="text-left space-y-4 text-slate-700 dark:text-slate-300">
+                <h3 class="text-lg font-semibold border-b border-slate-200 dark:border-slate-700 pb-2">Como Usar (Guia Rápido):</h3>
+                <ol class="list-decimal list-inside space-y-3">
+                    <li>
+                        <strong>Selecione a Empresa:</strong> Escolha uma empresa na lista ou adicione uma nova clicando em "Gerir". O <strong>CNPJ</strong> da empresa selecionada será usado para renomear os ficheiros.
+                    </li>
+                    <li>
+                        <strong>Defina o Padrão do Nome:</strong> Escolha como o novo nome do ficheiro será montado. Você pode usar os padrões existentes ou criar um personalizado em "Gerir".
+                    </li>
+                    <li>
+                        <strong>Carregue os Ficheiros XML:</strong> Arraste e solte ou selecione os ficheiros <strong>.xml</strong> que deseja renomear. A mágica acontece aqui!
+                    </li>
+                    <li>
+                        <strong>(Opcional) Carregue a Planilha:</strong> Se tiver uma planilha do sistema SOC, pode carregá-la para verificar quais funcionários da lista tiveram seus ficheiros processados.
+                    </li>
+                    <li>
+                        <strong>Descarregue Tudo:</strong> Use os botões na coluna da direita para descarregar os ficheiros renomeados num ficheiro <strong>.zip</strong>, individualmente, ou para gerar um relatório em Excel com o resumo de tudo o que foi feito.
+                    </li>
+                </ol>
+            </div>
+
+            <div class="mt-8 text-center">
+                <button id="close-manual-modal-btn" class="bg-blue-600 text-white font-bold py-3 px-8 rounded-lg shadow-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-slate-800 transition-transform hover:scale-105">
+                    Entendi, vamos começar!
+                </button>
+            </div>
+        </div>
+    </div>
 
     <script>
-       // O SEU CÓDIGO JAVASCRIPT PERMANECE EXATAMENTE O MESMO AQUI.
-       // Cole-o na íntegra abaixo. Para manter a resposta limpa, não o repetirei,
-       // mas é crucial que ele seja inserido aqui para que a página funcione.
-       
        document.addEventListener('DOMContentLoaded', () => {
 
         // --- Seletores de Elementos DOM ---
         const empresaSelect = document.getElementById('empresa');
         const dropZone = document.getElementById('drop-zone');
+        // ... (restante dos seletores)
+
+        // --- Seletores de Modais ---
+        const errorModal = { /* ... */ };
+        const companiesModal = { /* ... */ };
+        const patternsModal = { /* ... */ };
+        
+        // NOVO: Seletor do Modal do Manual
+        const manualModal = {
+            el: document.getElementById('manual-modal'),
+            closeBtn: document.getElementById('close-manual-modal-btn')
+        };
+
+        // --- Lógica do Manual de Boas-Vindas ---
+        if (!localStorage.getItem('esocialRenamerManualSeen')) {
+            manualModal.el.classList.remove('hidden');
+            manualModal.el.classList.add('flex');
+        }
+
+        manualModal.closeBtn.addEventListener('click', () => {
+            manualModal.el.classList.add('hidden');
+            manualModal.el.classList.remove('flex');
+            localStorage.setItem('esocialRenamerManualSeen', 'true');
+        });
+
+        // --- O RESTANTE DO SEU CÓDIGO JAVASCRIPT VAI AQUI ---
+        // (Copiei e colei todo o seu JS abaixo para garantir que tudo funcione)
+
         const fileInput = document.getElementById('file-input');
         const downloadZipBtn = document.getElementById('download-zip-btn');
         const downloadIndividualBtn = document.getElementById('download-individual-btn');
@@ -303,44 +357,36 @@
         const employeeStatusContainer = document.getElementById('employee-status-container');
         const employeeStatusList = document.getElementById('employee-status-list');
 
-        // --- Seletores de Modais ---
-        const errorModal = {
-            el: document.getElementById('error-modal'),
-            title: document.getElementById('error-title'),
-            message: document.getElementById('error-message'),
-            closeBtn: document.getElementById('close-error-modal-btn')
-        };
-        const companiesModal = {
-            el: document.getElementById('companies-modal'),
-            openBtn: document.getElementById('manage-companies-btn'),
-            closeBtn: document.getElementById('close-companies-modal-btn'),
-            form: document.getElementById('add-company-form'),
-            list: document.getElementById('company-list'),
-            nameInput: document.getElementById('company-name'),
-            cnpjInput: document.getElementById('company-cnpj')
-        };
-        const patternsModal = {
-            el: document.getElementById('patterns-modal'),
-            openBtn: document.getElementById('manage-patterns-btn'),
-            closeBtn: document.getElementById('close-patterns-modal-btn'),
-            form: document.getElementById('add-pattern-form'),
-            list: document.getElementById('pattern-list'),
-            nameInput: document.getElementById('pattern-name'),
-            valueInput: document.getElementById('pattern-value')
-        };
+        errorModal.el = document.getElementById('error-modal');
+        errorModal.title = document.getElementById('error-title');
+        errorModal.message = document.getElementById('error-message');
+        errorModal.closeBtn = document.getElementById('close-error-modal-btn');
+
+        companiesModal.el = document.getElementById('companies-modal');
+        companiesModal.openBtn = document.getElementById('manage-companies-btn');
+        companiesModal.closeBtn = document.getElementById('close-companies-modal-btn');
+        companiesModal.form = document.getElementById('add-company-form');
+        companiesModal.list = document.getElementById('company-list');
+        companiesModal.nameInput = document.getElementById('company-name');
+        companiesModal.cnpjInput = document.getElementById('company-cnpj');
+
+        patternsModal.el = document.getElementById('patterns-modal');
+        patternsModal.openBtn = document.getElementById('manage-patterns-btn');
+        patternsModal.closeBtn = document.getElementById('close-patterns-modal-btn');
+        patternsModal.form = document.getElementById('add-pattern-form');
+        patternsModal.list = document.getElementById('pattern-list');
+        patternsModal.nameInput = document.getElementById('pattern-name');
+        patternsModal.valueInput = document.getElementById('pattern-value');
         
-        // --- Seletores Dark Mode ---
         const themeToggleBtn = document.getElementById('theme-toggle');
         const themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');
         const themeToggleLightIcon = document.getElementById('theme-toggle-light-icon');
 
-        // --- Estado da Aplicação ---
         let processedFiles = [];
         let companies = [];
         let namingPatterns = [];
         let socEmployeesData = new Map();
         
-        // --- Lógica do Modo Escuro ---
         const applyTheme = () => {
             if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
                 document.documentElement.classList.add('dark');
@@ -359,7 +405,6 @@
             applyTheme();
         });
         
-        // --- Lógica de Gerenciamento de Empresas ---
         const saveCompanies = () => localStorage.setItem('esocial_renamer_companies', JSON.stringify(companies));
 
         const loadCompanies = () => {
@@ -389,10 +434,10 @@
             companiesModal.list.innerHTML = '';
             companies.forEach((company, index) => {
                 const div = document.createElement('div');
-                div.className = 'flex items-center justify-between bg-gray-100 dark:bg-gray-700 p-2 rounded';
+                div.className = 'flex items-center justify-between bg-slate-100 dark:bg-slate-700 p-2 rounded';
                 div.innerHTML = `
                     <span class="text-sm">${company.name}</span>
-                    <button data-index="${index}" class="delete-company-btn text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></button>`;
+                    <button data-index="${index}" class="delete-company-btn text-rose-500 hover:text-rose-700"><i class="fas fa-trash"></i></button>`;
                 companiesModal.list.appendChild(div);
             });
         };
@@ -401,8 +446,8 @@
             manualCnpjContainer.classList.toggle('hidden', empresaSelect.value !== 'manual');
         });
 
-        companiesModal.openBtn.addEventListener('click', () => companiesModal.el.classList.remove('hidden'));
-        companiesModal.closeBtn.addEventListener('click', () => companiesModal.el.classList.add('hidden'));
+        companiesModal.openBtn.addEventListener('click', () => companiesModal.el.classList.add('flex'));
+        companiesModal.closeBtn.addEventListener('click', () => companiesModal.el.classList.remove('flex'));
         companiesModal.form.addEventListener('submit', (e) => {
             e.preventDefault();
             const name = companiesModal.nameInput.value.trim();
@@ -425,7 +470,6 @@
             }
         });
 
-        // --- Lógica de Gerenciamento de Padrões ---
         const savePatterns = () => localStorage.setItem('esocial_renamer_patterns', JSON.stringify(namingPatterns));
 
         const loadPatterns = () => {
@@ -450,13 +494,13 @@
             patternsModal.list.innerHTML = '';
             namingPatterns.forEach((pattern, index) => {
                 const div = document.createElement('div');
-                div.className = 'flex items-center justify-between bg-gray-100 dark:bg-gray-700 p-2 rounded';
+                div.className = 'flex items-center justify-between bg-slate-100 dark:bg-slate-700 p-2 rounded';
                 div.innerHTML = `
                     <div>
                         <p class="text-sm font-semibold">${pattern.name}</p>
-                        <p class="text-xs text-gray-500 dark:text-gray-400">${pattern.value}</p>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">${pattern.value}</p>
                     </div>
-                    <button data-index="${index}" class="delete-pattern-btn text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></button>`;
+                    <button data-index="${index}" class="delete-pattern-btn text-rose-500 hover:text-rose-700"><i class="fas fa-trash"></i></button>`;
                 patternsModal.list.appendChild(div);
             });
             updatePatternPreview();
@@ -468,8 +512,8 @@
         
         namingPatternSelect.addEventListener('change', updatePatternPreview);
 
-        patternsModal.openBtn.addEventListener('click', () => patternsModal.el.classList.remove('hidden'));
-        patternsModal.closeBtn.addEventListener('click', () => patternsModal.el.classList.add('hidden'));
+        patternsModal.openBtn.addEventListener('click', () => patternsModal.el.classList.add('flex'));
+        patternsModal.closeBtn.addEventListener('click', () => patternsModal.el.classList.remove('flex'));
         patternsModal.form.addEventListener('submit', (e) => {
             e.preventDefault();
             const name = patternsModal.nameInput.value.trim();
@@ -492,7 +536,6 @@
             }
         });
 
-        // --- Lógica da Planilha ---
         spreadsheetInput.addEventListener('change', (e) => handleSpreadsheet(e.target.files[0]));
         spreadsheetDropZone.addEventListener('click', () => spreadsheetInput.click());
         spreadsheetDropZone.addEventListener('dragover', (e) => { e.preventDefault(); spreadsheetDropZone.classList.add('drop-zone-active'); });
@@ -523,7 +566,7 @@
                     let headerRowIndex = -1;
 
                     if (json.length > 0) {
-                        for (let i = 0; i < Math.min(5, json.length); i++) {
+                        for (let i = 0; i < Math.min(10, json.length); i++) {
                             const headers = json[i].map(h => String(h).trim().toUpperCase());
                             const tempCpfIndex = headers.indexOf('CPF');
                             const tempNameIndex = headers.indexOf('NOME FUNCIONÁRIO');
@@ -538,14 +581,14 @@
                     }
 
                     if (cpfColumnIndex === -1 || nameColumnIndex === -1) {
-                        showError('Colunas não encontradas', 'Não foi possível encontrar as colunas "CPF" e "Nome Funcionário" na planilha.');
+                        showError('Colunas não encontradas', 'Não foi possível encontrar as colunas "CPF" e "NOME FUNCIONÁRIO" na planilha.');
                         spreadsheetStatus.textContent = 'Erro ao ler planilha.';
                         return;
                     }
 
                     for (let i = headerRowIndex + 1; i < json.length; i++) {
                         const row = json[i];
-                        if (row[cpfColumnIndex] && row[nameColumnIndex]) {
+                        if (row && row[cpfColumnIndex] && row[nameColumnIndex]) {
                             const cpf = String(row[cpfColumnIndex]).replace(/\D/g, '').padStart(11, '0');
                             const name = String(row[nameColumnIndex]);
                             socEmployeesData.set(cpf, { name, hasS2220: false, hasS2240: false });
@@ -574,7 +617,6 @@
             reader.readAsArrayBuffer(file);
         }
 
-        // --- Funções de Validação ---
         function validaCPF(cpf) {
             cpf = String(cpf).replace(/[^\d]+/g, '');
             if (cpf === '' || cpf.length !== 11 || /^(\d)\1{10}$/.test(cpf)) return false;
@@ -613,13 +655,11 @@
             return files;
         }
 
-
-        // --- Funções de UI ---
         function showError(title, message) {
-            errorModal.title.textContent = title;
-            errorModal.message.textContent = message;
             errorModal.el.classList.remove('hidden');
             errorModal.el.classList.add('flex');
+            errorModal.title.textContent = title;
+            errorModal.message.textContent = message;
         }
 
         function closeErrorModal() {
@@ -636,7 +676,6 @@
             }
             fileListContainer.classList.remove('hidden');
             noFilesMessage.classList.add('hidden');
-
 
             const s2220List = document.getElementById('s2220-list');
             const s2240List = document.getElementById('s2240-list');
@@ -666,24 +705,24 @@
 
             const createFileItem = (fileData) => {
                 const fileItem = document.createElement('div');
-                fileItem.className = 'file-item bg-white dark:bg-gray-700/50 p-3 rounded-lg flex items-center justify-between border border-gray-200 dark:border-gray-600/50';
+                fileItem.className = 'bg-white dark:bg-slate-700/50 p-3 rounded-lg flex items-center justify-between border border-slate-200 dark:border-slate-600/50 shadow-sm hover:shadow-md transition-shadow duration-200';
                 let statusIcon, statusColor, newNameHtml, actionButton, cpfWarningHtml = '', inconsistencyWarningHtml = '', socStatusHtml = '';
                 
                 if (fileData.error) {
-                    statusIcon = 'fas fa-exclamation-triangle'; statusColor = 'text-red-500';
-                    newNameHtml = `<p class="text-xs text-red-500 font-medium">${fileData.error}</p>`; actionButton = '';
+                    statusIcon = 'fas fa-exclamation-triangle'; statusColor = 'text-rose-500';
+                    newNameHtml = `<p class="text-xs text-rose-500 font-medium">${fileData.error}</p>`; actionButton = '';
                 } else {
-                    statusIcon = 'fas fa-check-circle'; statusColor = 'text-green-500';
-                    newNameHtml = `<div class="flex items-center flex-wrap"><p class="text-xs font-semibold text-gray-800 dark:text-gray-100">${fileData.newName}</p></div>`;
-                    actionButton = `<a href="${URL.createObjectURL(fileData.newBlob)}" download="${fileData.newName}" class="ml-4 text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition flex-shrink-0" data-tooltip="Baixar ficheiro"><i class="fas fa-download"></i></a>`;
+                    statusIcon = 'fas fa-check-circle'; statusColor = 'text-emerald-500';
+                    newNameHtml = `<div class="flex items-center flex-wrap"><p class="text-xs font-semibold text-slate-800 dark:text-slate-100">${fileData.newName}</p></div>`;
+                    actionButton = `<a href="${URL.createObjectURL(fileData.newBlob)}" download="${fileData.newName}" class="ml-4 text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition flex-shrink-0" data-tooltip="Baixar ficheiro"><i class="fas fa-download"></i></a>`;
                     if (!fileData.isCpfValid) {
-                        cpfWarningHtml = `<span class="ml-2" data-tooltip="CPF inválido"><i class="fas fa-exclamation-triangle text-yellow-500"></i></span>`;
+                        cpfWarningHtml = `<span class="ml-2" data-tooltip="CPF inválido"><i class="fas fa-exclamation-triangle text-amber-500"></i></span>`;
                     }
                     if (fileData.hasInconsistency) {
                         inconsistencyWarningHtml = `<span class="ml-2" data-tooltip="Inconsistência: Matrícula diferente para este CPF em outro ficheiro."><i class="fas fa-exclamation-circle text-orange-500"></i></span>`;
                     }
                     if (socEmployeesData.size > 0 && socEmployeesData.has(fileData.cpf)) {
-                        socStatusHtml = `<span class="ml-2" data-tooltip="Funcionário encontrado na planilha SOC."><i class="fas fa-check-double text-cyan-500"></i></span>`;
+                        socStatusHtml = `<span class="ml-2" data-tooltip="Funcionário encontrado na planilha SOC."><i class="fas fa-check-double text-sky-500"></i></span>`;
                     }
                 }
 
@@ -722,15 +761,15 @@
 
             employeesWithFiles.forEach(data => {
                 const item = document.createElement('div');
-                item.className = 'employee-item bg-white dark:bg-gray-700/50 p-3 rounded-lg flex items-center justify-between border border-gray-200 dark:border-gray-600/50';
+                item.className = 'bg-white dark:bg-slate-700/50 p-3 rounded-lg flex items-center justify-between border border-slate-200 dark:border-slate-600/50 shadow-sm';
 
                 const s2220Icon = data.hasS2220 
-                    ? `<i class="fas fa-check-circle text-green-500"></i>`
-                    : `<i class="fas fa-times-circle text-gray-400"></i>`;
+                    ? `<i class="fas fa-check-circle text-emerald-500"></i>`
+                    : `<i class="fas fa-times-circle text-slate-400"></i>`;
                 
                 const s2240Icon = data.hasS2240
-                    ? `<i class="fas fa-check-circle text-green-500"></i>`
-                    : `<i class="fas fa-times-circle text-gray-400"></i>`;
+                    ? `<i class="fas fa-check-circle text-emerald-500"></i>`
+                    : `<i class="fas fa-times-circle text-slate-400"></i>`;
 
                 item.innerHTML = `
                     <p class="font-medium text-sm flex-grow truncate" title="${data.name}">${data.name}</p>
@@ -752,7 +791,6 @@
             clearListBtn.disabled = !hasAnyFiles;
         }
 
-        // --- Event Listeners de UI ---
         errorModal.closeBtn.addEventListener('click', closeErrorModal);
         dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('drop-zone-active'); });
         dropZone.addEventListener('dragleave', (e) => { e.preventDefault(); dropZone.classList.remove('drop-zone-active'); });
@@ -848,7 +886,6 @@
             }
         }
 
-        // --- Lógica de Download e Limpeza ---
         function saveFile(blob, filename) {
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
@@ -939,7 +976,6 @@
             updateEmployeeStatusUI();
         });
 
-        // --- Inicialização da Aplicação ---
         applyTheme();
         loadCompanies();
         loadPatterns();
