@@ -126,7 +126,7 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div class="space-y-2">
                                 <h2 class="text-lg font-semibold text-slate-700 dark:text-slate-300">
-                                    <span class="bg-gradient-to-br from-blue-600 to-indigo-700 text-white rounded-full w-8 h-8 inline-flex items-center justify-center mr-3">3</span>Ficheiros XML
+                                    <span class="bg-gradient-to-br from-blue-600 to-indigo-700 text-white rounded-full w-8 h-8 inline-flex items-center justify-center mr-3">3</span>Ficheiros de Evento (Originais)
                                 </h2>
                                 <label for="file-input" id="drop-zone" class="border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-xl p-4 text-center cursor-pointer transition hover:bg-slate-50 dark:hover:bg-slate-700/50 w-full flex items-center justify-center gap-3">
                                     <i class="fas fa-file-code text-2xl text-blue-500 dark:text-blue-400"></i>
@@ -151,7 +151,7 @@
                 <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 border-t-4 border-t-green-500 shadow-sm">
                     <div class="p-6">
                         <h2 class="text-lg font-semibold text-slate-700 dark:text-slate-300 mb-4">
-                            <i class="fas fa-check-double text-green-500 mr-2"></i>Confirmação de Envio
+                            <i class="fas fa-check-double text-green-500 mr-2"></i>Confirmação de Envio (Ficheiros com Recibo)
                         </h2>
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                             <div>
@@ -325,13 +325,13 @@
                 <h3 class="text-lg font-semibold border-b border-slate-200 dark:border-slate-700 pb-2">Como Usar (Guia Rápido):</h3>
                 <ol class="list-decimal list-inside space-y-4">
                     <li>
-                        <strong>Renomear Ficheiros:</strong> Use os passos de 1 a 4 para selecionar a empresa, padrão, carregar os XMLs e (opcionalmente) uma planilha de referência.
+                        <strong>Analisar e Renomear:</strong> Use os passos de 1 a 4 para selecionar a empresa, padrão, carregar os **ficheiros de evento originais** e (opcionalmente) uma planilha de referência para ver os nomes dos funcionários.
                     </li>
                     <li>
-                        <strong>Descarregar:</strong> Use os botões na coluna da direita para descarregar os ficheiros renomeados.
+                        <strong>Descarregar:</strong> Use os botões na coluna da direita para descarregar os ficheiros renomeados ou gerar um **Relatório** completo em Excel.
                     </li>
                      <li>
-                        <strong>Validar Recibos:</strong> Após o envio ao eSocial, use a seção de <strong>Confirmação de Envio</strong>. Selecione o mês de referência e carregue os XMLs com os recibos para validar as datas de envio e gerar um comprovante.
+                        <strong>Validar Recibos:</strong> Após o envio ao eSocial, use a seção de **Confirmação de Envio**. Selecione o mês de referência, carregue os **ficheiros com recibo** para validar as datas e gerar um **Comprovante**.
                     </li>
                 </ol>
             </div>
@@ -1003,6 +1003,7 @@
                 const cpf = (getText("cpfTrab") || "SEM_CPF").replace(/\D/g, '').padStart(11, '0');
                 const isCpfValid = validaCPF(cpf);
                 const matricula = getText("matricula") || "SEM_MATRICULA";
+                const dtAdm = getText("dtAdm") || "N/A"; // NOVO: Captura a data de admissão
                 const dataHora = idEvento.substring(17, 31);
                 let prefixo = "DESCONHECIDO", eventType = "DESCONHECIDO";
                 const nomeDoEvento = eventNode.localName;
@@ -1014,7 +1015,7 @@
                     .replace(/\[data\]/g, dataHora).replace(/\[cpf\]/g, cpf)
                     .replace(/\[matricula\]/g, matricula) + '.xml';
                 const newBlob = new Blob([xmlText], { type: 'text/xml' });
-                return { ...fileData, newName: novoNome, newBlob, companyName, eventType, cpf, isCpfValid, matricula };
+                return { ...fileData, newName: novoNome, newBlob, companyName, eventType, cpf, isCpfValid, matricula, dtAdm }; // NOVO: Retorna dtAdm
             } catch (e) {
                 console.error("Erro detalhado:", fileData.originalName, e);
                 return { ...fileData, error: `Erro: ${e.message}` };
@@ -1073,6 +1074,7 @@
                     "CPF": file.cpf || 'N/A',
                     "Status CPF": file.error ? 'N/A' : (file.isCpfValid ? 'Válido' : 'Inválido'),
                     "Matricula": file.matricula || 'N/A',
+                    "Data de Admissão": file.dtAdm || 'N/A', // NOVO: Adiciona a data de admissão ao relatório
                     "Tipo de Evento": file.eventType || 'N/A',
                     "Inconsistência": file.hasInconsistency ? 'Matrícula divergente' : 'N/A',
                     "Duplicidade": file.isDuplicate ? 'Sim' : 'Não',
@@ -1257,11 +1259,13 @@
                 const xmlDoc = parser.parseFromString(xmlText, "application/xml");
                 
                 const nrReciboNode = xmlDoc.querySelector("nrRecibo");
-                const cpfTrabNode = xmlDoc.querySelector("cpfTrab");
 
                 if (!nrReciboNode) {
                     return { originalName: file.name, error: "Recibo não encontrado no ficheiro." };
                 }
+
+                // Tenta encontrar o CPF em múltiplos locais para ser mais robusto
+                const cpfTrabNode = xmlDoc.querySelector("cpfTrab") || xmlDoc.querySelector("cpf");
                 const nrRecibo = nrReciboNode.textContent;
                 const cpfTrab = cpfTrabNode ? cpfTrabNode.textContent.replace(/\D/g, '').padStart(11, '0') : "SEM_CPF";
                 
