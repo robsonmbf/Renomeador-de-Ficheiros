@@ -75,7 +75,7 @@
             <h1 class="text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-cyan-500 dark:from-blue-400 dark:to-cyan-300 pb-2">
                 Renomeador e Validador eSocial
             </h1>
-            <p class="text-slate-500 dark:text-slate-400 mt-2">Automatize a renomeação e valide os recibos dos eventos S-2220 e S-2240.</p>
+            <p class="text-slate-500 dark:text-slate-400 mt-2">Automatize a renomeação, valide os recibos e mantenha um histórico dos seus eventos.</p>
         </header>
 
         <main class="grid grid-cols-1 lg:grid-cols-5 lg:gap-10">
@@ -140,7 +140,7 @@
                                 </h2>
                                 <label for="spreadsheet-input" id="spreadsheet-drop-zone" class="border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-xl p-4 text-center cursor-pointer transition hover:bg-slate-50 dark:hover:bg-slate-700/50 w-full flex items-center justify-center gap-3">
                                      <i class="fas fa-file-excel text-2xl text-green-500 dark:text-green-400"></i>
-                                     <span id="spreadsheet-status" class="text-slate-600 dark:text-slate-300 font-semibold">Carregar Planilha Modelo1</span>
+                                     <span id="spreadsheet-status" class="text-slate-600 dark:text-slate-300 font-semibold">Carregar Planilha</span>
                                 </label>
                                  <input type="file" id="spreadsheet-input" accept=".xls, .xlsx" class="hidden">
                             </div>
@@ -191,7 +191,7 @@
 
             <div class="lg:col-span-2 mt-8 lg:mt-0 flex flex-col">
                 <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 border-t-4 border-t-blue-500 shadow-sm p-6 mb-6">
-                    <h2 class="text-lg font-semibold mb-4 text-slate-700 dark:text-slate-300"><span class="bg-gradient-to-br from-blue-600 to-indigo-700 text-white rounded-full w-8 h-8 inline-flex items-center justify-center mr-3">5</span>Ações Finais</h2>
+                    <h2 class="text-lg font-semibold mb-4 text-slate-700 dark:text-slate-300"><i class="fas fa-cogs mr-2"></i>Ações e Sessão</h2>
                     <div class="grid grid-cols-2 gap-3">
                         <button id="download-zip-btn" class="bg-indigo-600 text-white font-bold py-3 px-4 rounded-lg shadow-md hover:bg-indigo-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
                             <i class="fas fa-file-archive"></i>.zip
@@ -203,12 +203,21 @@
                             <i class="fas fa-file-alt"></i>Relatório
                         </button>
                         <button id="clear-list-btn" class="bg-rose-600 text-white font-bold py-3 px-4 rounded-lg shadow-md hover:bg-rose-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
-                            <i class="fas fa-trash"></i>Limpar
+                            <i class="fas fa-trash"></i>Limpar Tudo
                         </button>
                     </div>
                     <div class="mt-4 flex items-center justify-center">
                         <input type="checkbox" id="organize-folders-checkbox" class="h-4 w-4 rounded border-slate-300 dark:border-slate-500 text-indigo-600 focus:ring-indigo-500" checked>
                         <label for="organize-folders-checkbox" class="ml-2 block text-sm text-slate-700 dark:text-slate-300">Organizar .zip em subpastas</label>
+                    </div>
+                    <div class="border-t border-slate-200 dark:border-slate-700 mt-4 pt-4 grid grid-cols-2 gap-3">
+                        <button id="save-session-btn" class="bg-sky-600 text-white font-bold py-3 px-4 rounded-lg shadow-md hover:bg-sky-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                            <i class="fas fa-save"></i>Salvar Sessão
+                        </button>
+                        <button id="load-session-btn" class="bg-slate-600 text-white font-bold py-3 px-4 rounded-lg shadow-md hover:bg-slate-700 transition flex items-center justify-center gap-2">
+                            <i class="fas fa-upload"></i>Carregar Sessão
+                        </button>
+                        <input type="file" id="session-file-input" class="hidden" accept=".json">
                     </div>
                 </div>
 
@@ -324,11 +333,14 @@
             <div class="text-left space-y-5 text-slate-700 dark:text-slate-300">
                 <h3 class="text-lg font-semibold border-b border-slate-200 dark:border-slate-700 pb-2">Como Usar (Guia Rápido):</h3>
                 <ol class="list-decimal list-inside space-y-4">
-                    <li>
+                     <li>
                         <strong>Analisar e Renomear:</strong> Use os passos de 1 a 4 para selecionar a empresa, padrão, carregar os **ficheiros de evento originais** e (opcionalmente) uma planilha de referência para ver os nomes dos funcionários.
                     </li>
                     <li>
-                        <strong>Descarregar:</strong> Use os botões na coluna da direita para descarregar os ficheiros renomeados ou gerar um **Relatório** completo em Excel.
+                        <strong>Descarregar ou Gerar Relatório:</strong> Use os botões na coluna da direita para descarregar os ficheiros renomeados ou gerar um **Relatório** completo em Excel.
+                    </li>
+                    <li>
+                        **Salvar e Carregar Sessão:** Use os botões "Salvar Sessão" e "Carregar Sessão" para guardar e restaurar seu progresso a qualquer momento.
                     </li>
                      <li>
                         <strong>Validar Recibos:</strong> Após o envio ao eSocial, use a seção de **Confirmação de Envio**. Selecione o mês de referência, carregue os **ficheiros com recibo** para validar as datas e gerar um **Comprovante**.
@@ -369,6 +381,9 @@
         const employeeStatusList = document.getElementById('employee-status-list');
         const processedSummaryContainer = document.getElementById('processed-summary-container');
         const processedSummaryList = document.getElementById('processed-summary-list');
+        const saveSessionBtn = document.getElementById('save-session-btn');
+        const loadSessionBtn = document.getElementById('load-session-btn');
+        const sessionFileInput = document.getElementById('session-file-input');
 
         // --- Lógica da Seção de Confirmação ---
         const confirmationMonthSelect = document.getElementById('confirmation-month');
@@ -435,6 +450,45 @@
         let namingPatterns = [];
         let socEmployeesData = new Map();
         
+        // --- Lógica de Sessão (Importar/Exportar) ---
+        function saveSession() {
+            const serializableFiles = processedFiles.map(fileData => {
+                const { file, newBlob, ...rest } = fileData;
+                return rest;
+            });
+            const sessionData = JSON.stringify(serializableFiles, null, 2);
+            const blob = new Blob([sessionData], { type: 'application/json' });
+            const date = new Date().toISOString().slice(0, 10);
+            saveFile(blob, `sessao_esocial_${date}.json`);
+        }
+
+        function loadSession(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const content = e.target.result;
+                    const loadedFiles = JSON.parse(content);
+                    
+                    if (!Array.isArray(loadedFiles)) {
+                        throw new Error("O ficheiro de sessão não contém uma lista válida.");
+                    }
+
+                    processedFiles = loadedFiles;
+                    updateFileListUI();
+                    updateProcessedSummaryUI();
+                    updateEmployeeStatusUI();
+                    // Limpa o valor do input para permitir carregar o mesmo ficheiro novamente
+                    event.target.value = ''; 
+                } catch (err) {
+                    showError("Erro ao Carregar Sessão", `Não foi possível ler o ficheiro de sessão. Verifique se o ficheiro é válido. Detalhes: ${err.message}`);
+                }
+            };
+            reader.readAsText(file);
+        }
+
         // --- Lógica do Modo Escuro ---
         const applyTheme = () => {
             if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
@@ -791,15 +845,21 @@
             const createFileItem = (fileData) => {
                 const fileItem = document.createElement('div');
                 fileItem.className = 'bg-white dark:bg-slate-700/50 p-3 rounded-lg flex items-center justify-between border border-slate-200 dark:border-slate-600/50 shadow-sm hover:shadow-md transition-shadow duration-200';
-                let statusIcon, statusColor, newNameHtml, actionButton, cpfWarningHtml = '', inconsistencyWarningHtml = '', socStatusHtml = '', duplicateWarningHtml = '';
+                let statusIcon, statusColor, newNameHtml, actionButton = '', cpfWarningHtml = '', inconsistencyWarningHtml = '', socStatusHtml = '', duplicateWarningHtml = '';
                 
                 if (fileData.error) {
                     statusIcon = 'fas fa-exclamation-triangle'; statusColor = 'text-rose-500';
-                    newNameHtml = `<p class="text-xs text-rose-500 font-medium">${fileData.error}</p>`; actionButton = '';
+                    newNameHtml = `<p class="text-xs text-rose-500 font-medium">${fileData.error}</p>`;
                 } else {
                     statusIcon = 'fas fa-check-circle'; statusColor = 'text-emerald-500';
                     newNameHtml = `<div class="flex items-center flex-wrap"><p class="text-xs font-semibold text-slate-800 dark:text-slate-100">${fileData.newName}</p></div>`;
-                    actionButton = `<a href="${URL.createObjectURL(fileData.newBlob)}" download="${fileData.newName}" class="ml-4 text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition flex-shrink-0" data-tooltip="Baixar ficheiro"><i class="fas fa-download"></i></a>`;
+                    
+                    if (fileData.newBlob) { // Apenas cria botão de download se o blob existir (sessão atual)
+                        actionButton = `<a href="${URL.createObjectURL(fileData.newBlob)}" download="${fileData.newName}" class="ml-4 text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition flex-shrink-0" data-tooltip="Baixar ficheiro"><i class="fas fa-download"></i></a>`;
+                    } else {
+                        actionButton = `<span class="ml-4 text-slate-400 dark:text-slate-500 cursor-not-allowed" data-tooltip="Download indisponível para sessões antigas"><i class="fas fa-download"></i></span>`;
+                    }
+
                     if (!fileData.isCpfValid) {
                         cpfWarningHtml = `<span class="ml-2" data-tooltip="CPF inválido"><i class="fas fa-exclamation-triangle text-amber-500"></i></span>`;
                     }
@@ -917,12 +977,13 @@
         }
 
         function updateButtonStates() {
-            const hasProcessedFiles = processedFiles.some(f => !f.error);
+            const hasFilesForDownload = processedFiles.some(f => f.newBlob);
             const hasAnyFiles = processedFiles.length > 0;
-            downloadZipBtn.disabled = !hasProcessedFiles;
-            downloadIndividualBtn.disabled = !hasProcessedFiles;
+            downloadZipBtn.disabled = !hasFilesForDownload;
+            downloadIndividualBtn.disabled = !hasFilesForDownload;
             downloadReportBtn.disabled = !hasAnyFiles;
             clearListBtn.disabled = !hasAnyFiles;
+            saveSessionBtn.disabled = !hasAnyFiles;
         }
 
         errorModal.closeBtn.addEventListener('click', closeErrorModal);
@@ -964,7 +1025,7 @@
             const processingPromises = newFiles.map(file => processFile({ file: file, originalName: file.name }, cnpjCompleto, companyName));
             let results = await Promise.all(processingPromises);
             
-            processedFiles = [...processedFiles, ...results];
+            processedFiles.push(...results); // Adiciona os novos resultados aos existentes
             processedFiles = validateCrossFileData(processedFiles);
             processedFiles = checkForDuplicates(processedFiles);
 
@@ -1003,7 +1064,7 @@
                 const cpf = (getText("cpfTrab") || "SEM_CPF").replace(/\D/g, '').padStart(11, '0');
                 const isCpfValid = validaCPF(cpf);
                 const matricula = getText("matricula") || "SEM_MATRICULA";
-                const dtAdm = getText("dtAdm") || "N/A"; // NOVO: Captura a data de admissão
+                const dtAdm = getText("dtAdm") || "N/A"; 
                 const dataHora = idEvento.substring(17, 31);
                 let prefixo = "DESCONHECIDO", eventType = "DESCONHECIDO";
                 const nomeDoEvento = eventNode.localName;
@@ -1015,7 +1076,7 @@
                     .replace(/\[data\]/g, dataHora).replace(/\[cpf\]/g, cpf)
                     .replace(/\[matricula\]/g, matricula) + '.xml';
                 const newBlob = new Blob([xmlText], { type: 'text/xml' });
-                return { ...fileData, newName: novoNome, newBlob, companyName, eventType, cpf, isCpfValid, matricula, dtAdm }; // NOVO: Retorna dtAdm
+                return { ...fileData, newName: novoNome, newBlob, companyName, eventType, cpf, isCpfValid, matricula, dtAdm };
             } catch (e) {
                 console.error("Erro detalhado:", fileData.originalName, e);
                 return { ...fileData, error: `Erro: ${e.message}` };
@@ -1035,7 +1096,10 @@
         downloadZipBtn.addEventListener('click', () => {
             const zip = new JSZip();
             const validFiles = processedFiles.filter(f => f.newBlob && !f.error);
-            if (validFiles.length === 0) return;
+            if (validFiles.length === 0) {
+                showError("Sem ficheiros para download", "Apenas ficheiros carregados na sessão atual podem ser descarregados.");
+                return;
+            }
             const organizeInFolders = organizeFoldersCheckbox.checked;
             validFiles.forEach(fileData => {
                 let path = '';
@@ -1055,7 +1119,10 @@
 
         downloadIndividualBtn.addEventListener('click', () => {
             const validFiles = processedFiles.filter(f => f.newBlob && !f.error);
-            if (validFiles.length === 0) return;
+            if (validFiles.length === 0) {
+                 showError("Sem ficheiros para download", "Apenas ficheiros carregados na sessão atual podem ser descarregados.");
+                return;
+            }
             validFiles.forEach((fileData, index) => {
                 setTimeout(() => {
                     saveFile(fileData.newBlob, fileData.newName);
@@ -1074,7 +1141,7 @@
                     "CPF": file.cpf || 'N/A',
                     "Status CPF": file.error ? 'N/A' : (file.isCpfValid ? 'Válido' : 'Inválido'),
                     "Matricula": file.matricula || 'N/A',
-                    "Data de Admissão": file.dtAdm || 'N/A', // NOVO: Adiciona a data de admissão ao relatório
+                    "Data de Admissão": file.dtAdm || 'N/A',
                     "Tipo de Evento": file.eventType || 'N/A',
                     "Inconsistência": file.hasInconsistency ? 'Matrícula divergente' : 'N/A',
                     "Duplicidade": file.isDuplicate ? 'Sim' : 'Não',
@@ -1333,8 +1400,12 @@
         loadPatterns();
         updateButtonStates();
         setupConfirmationSection();
+        
+        // Event Listeners para Sessão
+        saveSessionBtn.addEventListener('click', saveSession);
+        loadSessionBtn.addEventListener('click', () => sessionFileInput.click());
+        sessionFileInput.addEventListener('change', loadSession);
     });
     </script>
 </body>
 </html>
-
