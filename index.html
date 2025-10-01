@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="pt-BR" class=""> <head>
+<html lang="pt-BR" class=""> 
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Renomeador e Validador eSocial (S-2220 / S-2240)</title>
@@ -16,6 +17,7 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         body {
             font-family: 'Inter', sans-serif;
+            background-color: #009eae;
         }
         .drop-zone-active {
             border-color: #3b82f6; /* blue-500 */
@@ -58,9 +60,21 @@
             background: #475569; /* slate-600 */
             border-color: #1e293b; /* slate-800 */
         }
+        .loader {
+            border: 4px solid #f3f3f3; /* Light grey */
+            border-top: 4px solid #3498db; /* Blue */
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
-<body class="bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-200 min-h-screen p-4 sm:p-6 lg:p-8 transition-colors duration-300">
+<body class="text-slate-800 dark:text-slate-200 min-h-screen p-4 sm:p-6 lg:p-8 transition-colors duration-300">
 
     <div class="w-full max-w-7xl mx-auto bg-white dark:bg-slate-800 rounded-2xl shadow-xl p-6 md:p-8 relative">
         
@@ -126,11 +140,12 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div class="space-y-2">
                                 <h2 class="text-lg font-semibold text-slate-700 dark:text-slate-300">
-                                    <span class="bg-gradient-to-br from-blue-600 to-indigo-700 text-white rounded-full w-8 h-8 inline-flex items-center justify-center mr-3">3</span>Ficheiros de Evento (Originais)
+                                    <span class="bg-gradient-to-br from-blue-600 to-indigo-700 text-white rounded-full w-8 h-8 inline-flex items-center justify-center mr-3">3</span>Arquivos de Evento (Originais)
                                 </h2>
-                                <label for="file-input" id="drop-zone" class="border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-xl p-4 text-center cursor-pointer transition hover:bg-slate-50 dark:hover:bg-slate-700/50 w-full flex items-center justify-center gap-3">
-                                    <i class="fas fa-file-code text-2xl text-blue-500 dark:text-blue-400"></i>
-                                    <span class="text-slate-600 dark:text-slate-300 font-semibold">Carregar Ficheiros XML</span>
+                                <label for="file-input" id="drop-zone" class="border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-xl p-4 text-center cursor-pointer transition hover:bg-slate-50 dark:hover:bg-slate-700/50 w-full flex items-center justify-center gap-3 min-h-[64px]">
+                                    <i id="file-input-icon" class="fas fa-file-code text-2xl text-blue-500 dark:text-blue-400"></i>
+                                    <span id="file-input-text" class="text-slate-600 dark:text-slate-300 font-semibold">Carregar Arquivos XML</span>
+                                    <div id="file-input-loader" class="loader hidden"></div>
                                 </label>
                                 <input type="file" id="file-input" multiple accept=".xml" class="hidden">
                             </div>
@@ -138,7 +153,7 @@
                                  <h2 class="text-lg font-semibold text-slate-700 dark:text-slate-300">
                                     <span class="bg-slate-500 text-white rounded-full w-8 h-8 inline-flex items-center justify-center mr-3">4</span>Planilha (Opcional)
                                 </h2>
-                                <label for="spreadsheet-input" id="spreadsheet-drop-zone" class="border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-xl p-4 text-center cursor-pointer transition hover:bg-slate-50 dark:hover:bg-slate-700/50 w-full flex items-center justify-center gap-3">
+                                <label for="spreadsheet-input" id="spreadsheet-drop-zone" class="border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-xl p-4 text-center cursor-pointer transition hover:bg-slate-50 dark:hover:bg-slate-700/50 w-full flex items-center justify-center gap-3 min-h-[64px]">
                                      <i class="fas fa-file-excel text-2xl text-green-500 dark:text-green-400"></i>
                                      <span id="spreadsheet-status" class="text-slate-600 dark:text-slate-300 font-semibold">Carregar Planilha</span>
                                 </label>
@@ -151,7 +166,7 @@
                 <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 border-t-4 border-t-green-500 shadow-sm">
                     <div class="p-6">
                         <h2 class="text-lg font-semibold text-slate-700 dark:text-slate-300 mb-4">
-                            <i class="fas fa-check-double text-green-500 mr-2"></i>Confirmação de Envio (Ficheiros com Recibo)
+                            <i class="fas fa-check-double text-green-500 mr-2"></i>Confirmação de Envio (Arquivos com Recibo)
                         </h2>
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                             <div>
@@ -163,9 +178,10 @@
                                 <input type="number" id="confirmation-year" class="mt-1 w-full p-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-slate-50 dark:bg-slate-700 focus:ring-2 focus:ring-green-500 focus:border-green-500 transition">
                             </div>
                             <div class="md:col-span-3">
-                                <label for="confirmation-input" id="confirmation-drop-zone" class="border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-xl p-4 text-center cursor-pointer transition hover:bg-slate-50 dark:hover:bg-slate-700/50 w-full flex items-center justify-center gap-3">
-                                    <i class="fas fa-file-invoice text-2xl text-green-500 dark:text-green-400"></i>
-                                    <span class="text-slate-600 dark:text-slate-300 font-semibold">Carregar Ficheiros com Recibo</span>
+                                <label for="confirmation-input" id="confirmation-drop-zone" class="border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-xl p-4 text-center cursor-pointer transition hover:bg-slate-50 dark:hover:bg-slate-700/50 w-full flex items-center justify-center gap-3 min-h-[64px]">
+                                    <i id="confirmation-input-icon" class="fas fa-file-invoice text-2xl text-green-500 dark:text-green-400"></i>
+                                    <span id="confirmation-input-text" class="text-slate-600 dark:text-slate-300 font-semibold">Carregar Arquivos com Recibo</span>
+                                    <div id="confirmation-input-loader" class="loader hidden"></div>
                                 </label>
                                 <input type="file" id="confirmation-input" multiple accept=".xml" class="hidden">
                             </div>
@@ -234,13 +250,13 @@
                                  <div id="s2240-list" class="space-y-2"></div>
                              </div>
                              <div id="error-section" class="hidden">
-                                 <h3 class="text-lg font-semibold mb-3 text-rose-500 dark:text-rose-400">Ficheiros com Erro (<span id="error-count">0</span>)</h3>
+                                 <h3 class="text-lg font-semibold mb-3 text-rose-500 dark:text-rose-400">Arquivos com Erro (<span id="error-count">0</span>)</h3>
                                  <div id="error-list" class="space-y-2"></div>
                              </div>
                         </div>
 
                         <div id="processed-summary-container" class="mt-6 hidden">
-                            <h3 class="text-lg font-semibold mb-3 text-slate-800 dark:text-white">Resumo de Ficheiros Processados</h3>
+                            <h3 class="text-lg font-semibold mb-3 text-slate-800 dark:text-white">Resumo de Arquivos Processados</h3>
                             <div id="processed-summary-list" class="space-y-2"></div>
                         </div>
 
@@ -251,7 +267,7 @@
 
                         <div id="no-files-message" class="text-center text-slate-500 dark:text-slate-400 py-10 h-full flex flex-col justify-center items-center">
                             <i class="fas fa-list-alt text-4xl mb-4"></i>
-                            <p>Os seus ficheiros processados aparecerão aqui.</p>
+                            <p>Os seus arquivos processados aparecerão aqui.</p>
                         </div>
                     </div>
                 </div>
@@ -259,6 +275,7 @@
         </main>
     </div>
 
+    <!-- Modal de Erro -->
     <div id="error-modal" class="fixed inset-0 bg-black bg-opacity-60 hidden items-center justify-center p-4 z-50">
         <div class="bg-white dark:bg-slate-800 rounded-lg shadow-2xl p-6 max-w-sm w-full text-center">
             <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 dark:bg-red-900/50">
@@ -276,6 +293,7 @@
         </div>
     </div>
 
+    <!-- Modal de Gestão de Empresas -->
     <div id="companies-modal" class="fixed inset-0 bg-black bg-opacity-60 hidden items-center justify-center p-4 z-50">
         <div class="bg-white dark:bg-slate-800 rounded-lg shadow-2xl p-6 w-full max-w-md">
             <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-4">Gerir Empresas</h3>
@@ -299,6 +317,7 @@
         </div>
     </div>
 
+    <!-- Modal de Gestão de Padrões -->
     <div id="patterns-modal" class="fixed inset-0 bg-black bg-opacity-60 hidden items-center justify-center p-4 z-50">
         <div class="bg-white dark:bg-slate-800 rounded-lg shadow-2xl p-6 w-full max-w-md">
             <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-4">Gerir Padrões de Nomenclatura</h3>
@@ -322,28 +341,29 @@
         </div>
     </div>
 
+    <!-- Manual de Boas-Vindas -->
     <div id="manual-modal" class="fixed inset-0 bg-black bg-opacity-70 hidden items-center justify-center p-4 z-50">
         <div class="bg-white dark:bg-slate-800 rounded-lg shadow-2xl p-8 w-full max-w-3xl transform transition-all">
             <div class="text-center">
                 <i class="fas fa-rocket text-4xl text-blue-500 dark:text-blue-400"></i>
                 <h2 class="text-2xl font-bold text-slate-900 dark:text-white mt-4 mb-2">Bem-vindo ao Renomeador e Validador!</h2>
-                <p class="text-slate-600 dark:text-slate-400 mb-8">Esta ferramenta foi criada para simplificar a sua vida, renomeando ficheiros e validando os recibos de envio dos eventos S-2220 e S-2240 do eSocial.</p>
+                <p class="text-slate-600 dark:text-slate-400 mb-8">Esta ferramenta foi criada para simplificar a sua vida, renomeando arquivos e validando os recibos de envio dos eventos S-2220 e S-2240 do eSocial.</p>
             </div>
             
             <div class="text-left space-y-5 text-slate-700 dark:text-slate-300">
                 <h3 class="text-lg font-semibold border-b border-slate-200 dark:border-slate-700 pb-2">Como Usar (Guia Rápido):</h3>
                 <ol class="list-decimal list-inside space-y-4">
                      <li>
-                        <strong>Analisar e Renomear:</strong> Use os passos de 1 a 4 para selecionar a empresa, padrão, carregar os **ficheiros de evento originais** e (opcionalmente) uma planilha de referência para ver os nomes dos funcionários.
+                        <strong>Analisar e Renomear:</strong> Use os passos de 1 a 4 para selecionar a empresa, padrão, carregar os **arquivos de evento originais** e (opcionalmente) uma planilha de referência para ver os nomes dos funcionários.
                     </li>
                     <li>
-                        <strong>Descarregar ou Gerar Relatório:</strong> Use os botões na coluna da direita para descarregar os ficheiros renomeados ou gerar um **Relatório** completo em Excel.
+                        <strong>Descarregar ou Gerar Relatório:</strong> Use os botões na coluna da direita para descarregar os arquivos renomeados ou gerar um **Relatório** completo em Excel.
                     </li>
                     <li>
                         **Salvar e Carregar Sessão:** Use os botões "Salvar Sessão" e "Carregar Sessão" para guardar e restaurar seu progresso a qualquer momento.
                     </li>
                      <li>
-                        <strong>Validar Recibos:</strong> Após o envio ao eSocial, use a seção de **Confirmação de Envio**. Selecione o mês de referência, carregue os **ficheiros com recibo** para validar as datas e gerar um **Comprovante**.
+                        <strong>Validar Recibos:</strong> Após o envio ao eSocial, use a seção de **Confirmação de Envio**. Selecione o mês de referência, carregue os **arquivos com recibo** para validar as datas e gerar um **Comprovante**.
                     </li>
                 </ol>
             </div>
@@ -355,6 +375,30 @@
             </div>
         </div>
     </div>
+    
+    <!-- Modal de Confirmação para Carregar Sessão -->
+    <div id="confirm-modal" class="fixed inset-0 bg-black bg-opacity-60 hidden items-center justify-center p-4 z-50">
+        <div class="bg-white dark:bg-slate-800 rounded-lg shadow-2xl p-6 max-w-sm w-full">
+            <div class="text-center">
+                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-amber-100 dark:bg-amber-900/50">
+                    <i class="fas fa-exclamation-triangle text-2xl text-amber-600 dark:text-amber-400"></i>
+                </div>
+                <h3 class="text-lg leading-6 font-medium text-slate-900 dark:text-white mt-4">Atenção</h3>
+                <div class="mt-2 px-4 py-3">
+                    <p class="text-sm text-slate-500 dark:text-slate-400" id="confirm-message">Já existem arquivos na sessão atual. Carregar um novo arquivo irá substituir todos os dados atuais. Deseja continuar?</p>
+                </div>
+            </div>
+            <div class="mt-4 flex justify-around">
+                <button id="confirm-cancel-btn" class="px-4 py-2 bg-slate-200 dark:bg-slate-600 text-slate-800 dark:text-slate-200 font-medium rounded-md w-24 shadow-sm hover:bg-slate-300 dark:hover:bg-slate-500">
+                    Cancelar
+                </button>
+                <button id="confirm-ok-btn" class="px-4 py-2 bg-blue-600 text-white font-medium rounded-md w-24 shadow-sm hover:bg-blue-700">
+                    Continuar
+                </button>
+            </div>
+        </div>
+    </div>
+
 
     <script>
        document.addEventListener('DOMContentLoaded', () => {
@@ -425,6 +469,12 @@
             el: document.getElementById('manual-modal'),
             closeBtn: document.getElementById('close-manual-modal-btn')
         };
+        const confirmModal = {
+            el: document.getElementById('confirm-modal'),
+            message: document.getElementById('confirm-message'),
+            okBtn: document.getElementById('confirm-ok-btn'),
+            cancelBtn: document.getElementById('confirm-cancel-btn')
+        };
 
         // --- Lógica do Manual de Boas-Vindas ---
         if (!localStorage.getItem('esocialRenamerManualSeen')) {
@@ -450,6 +500,15 @@
         let namingPatterns = [];
         let socEmployeesData = new Map();
         
+        // --- Funções Utilitárias ---
+        function formatCPF(cpf) {
+            const cpfDigits = String(cpf).replace(/\D/g, '');
+            if (cpfDigits.length !== 11) {
+                return cpf; // Retorna original se não tiver 11 dígitos
+            }
+            return cpfDigits.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+        }
+
         // --- Lógica de Sessão (Importar/Exportar) ---
         function saveSession() {
             const serializableFiles = processedFiles.map(fileData => {
@@ -459,7 +518,7 @@
             const sessionData = JSON.stringify(serializableFiles, null, 2);
             const blob = new Blob([sessionData], { type: 'application/json' });
             const date = new Date().toISOString().slice(0, 10);
-            saveFile(blob, `sessao_esocial_${date}.json`);
+            saveAs(blob, `sessao_esocial_${date}.json`);
         }
 
         function loadSession(event) {
@@ -473,17 +532,19 @@
                     const loadedFiles = JSON.parse(content);
                     
                     if (!Array.isArray(loadedFiles)) {
-                        throw new Error("O ficheiro de sessão não contém uma lista válida.");
+                        throw new Error("O arquivo de sessão não contém uma lista válida.");
                     }
+
+                    confirmationFiles = [];
+                    updateConfirmationListUI();
 
                     processedFiles = loadedFiles;
                     updateFileListUI();
                     updateProcessedSummaryUI();
                     updateEmployeeStatusUI();
-                    // Limpa o valor do input para permitir carregar o mesmo ficheiro novamente
                     event.target.value = ''; 
                 } catch (err) {
-                    showError("Erro ao Carregar Sessão", `Não foi possível ler o ficheiro de sessão. Verifique se o ficheiro é válido. Detalhes: ${err.message}`);
+                    showError("Erro ao Carregar Sessão", `Não foi possível ler o arquivo de sessão. Verifique se o arquivo é válido. Detalhes: ${err.message}`);
                 }
             };
             reader.readAsText(file);
@@ -522,7 +583,8 @@
         };
 
         const renderCompanyUI = () => {
-            empresaSelect.innerHTML = '<option value="" disabled selected>Escolha uma opção...</option>';
+            const selectedValue = empresaSelect.value;
+            empresaSelect.innerHTML = '<option value="" disabled>Escolha uma opção...</option>';
             companies.forEach(company => {
                 const option = document.createElement('option');
                 option.value = company.cnpj;
@@ -534,6 +596,11 @@
             manualOption.value = 'manual';
             manualOption.textContent = '--- Informar CNPJ manualmente ---';
             empresaSelect.appendChild(manualOption);
+
+            empresaSelect.value = companies.some(c => c.cnpj === selectedValue) || selectedValue === 'manual' ? selectedValue : '';
+            if (empresaSelect.value === '') {
+                 empresaSelect.querySelector('option[disabled]').selected = true;
+            }
 
             companiesModal.list.innerHTML = '';
             companies.forEach((company, index) => {
@@ -550,24 +617,20 @@
             manualCnpjContainer.classList.toggle('hidden', empresaSelect.value !== 'manual');
         });
 
-        // --- Lógica dos Modais (CORRIGIDA) ---
-        companiesModal.openBtn.addEventListener('click', () => {
-            companiesModal.el.classList.remove('hidden');
-            companiesModal.el.classList.add('flex');
-        });
-        companiesModal.closeBtn.addEventListener('click', () => {
-            companiesModal.el.classList.add('hidden');
-            companiesModal.el.classList.remove('flex');
-        });
+        // --- Lógica dos Modais ---
+        const setupModal = (modalConfig) => {
+            modalConfig.openBtn.addEventListener('click', () => {
+                modalConfig.el.classList.remove('hidden');
+                modalConfig.el.classList.add('flex');
+            });
+            modalConfig.closeBtn.addEventListener('click', () => {
+                modalConfig.el.classList.add('hidden');
+                modalConfig.el.classList.remove('flex');
+            });
+        };
         
-        patternsModal.openBtn.addEventListener('click', () => {
-            patternsModal.el.classList.remove('hidden');
-            patternsModal.el.classList.add('flex');
-        });
-        patternsModal.closeBtn.addEventListener('click', () => {
-            patternsModal.el.classList.add('hidden');
-            patternsModal.el.classList.remove('flex');
-        });
+        setupModal(companiesModal);
+        setupModal(patternsModal);
 
         companiesModal.form.addEventListener('submit', (e) => {
             e.preventDefault();
@@ -583,8 +646,9 @@
             }
         });
         companiesModal.list.addEventListener('click', (e) => {
-            if (e.target.closest('.delete-company-btn')) {
-                const index = e.target.closest('.delete-company-btn').dataset.index;
+            const deleteBtn = e.target.closest('.delete-company-btn');
+            if (deleteBtn) {
+                const index = deleteBtn.dataset.index;
                 companies.splice(index, 1);
                 saveCompanies();
                 renderCompanyUI();
@@ -604,13 +668,19 @@
         };
 
         const renderPatternUI = () => {
+            const selectedValue = namingPatternSelect.value;
             namingPatternSelect.innerHTML = '';
-            namingPatterns.forEach(pattern => {
-                const option = document.createElement('option');
-                option.value = pattern.value;
-                option.textContent = pattern.name;
-                namingPatternSelect.appendChild(option);
-            });
+            if (namingPatterns.length === 0) {
+                 namingPatternSelect.innerHTML = '<option value="" disabled selected>Crie um padrão para começar...</option>';
+            } else {
+                namingPatterns.forEach(pattern => {
+                    const option = document.createElement('option');
+                    option.value = pattern.value;
+                    option.textContent = pattern.name;
+                    namingPatternSelect.appendChild(option);
+                });
+                namingPatternSelect.value = namingPatterns.some(p => p.value === selectedValue) ? selectedValue : namingPatterns[0].value;
+            }
 
             patternsModal.list.innerHTML = '';
             namingPatterns.forEach((pattern, index) => {
@@ -628,7 +698,7 @@
         };
         
         function updatePatternPreview() {
-            patternPreview.textContent = namingPatternSelect.value ? namingPatternSelect.value : "Crie ou selecione um padrão acima.";
+            patternPreview.textContent = namingPatternSelect.value || "Nenhum padrão selecionado.";
         }
         
         namingPatternSelect.addEventListener('change', updatePatternPreview);
@@ -647,23 +717,12 @@
             }
         });
         patternsModal.list.addEventListener('click', (e) => {
-            if (e.target.closest('.delete-pattern-btn')) {
-                const index = e.target.closest('.delete-pattern-btn').dataset.index;
+            const deleteBtn = e.target.closest('.delete-pattern-btn');
+            if (deleteBtn) {
+                const index = deleteBtn.dataset.index;
                 namingPatterns.splice(index, 1);
                 savePatterns();
                 renderPatternUI();
-            }
-        });
-
-        spreadsheetInput.addEventListener('change', (e) => handleSpreadsheet(e.target.files[0]));
-        spreadsheetDropZone.addEventListener('click', () => spreadsheetInput.click());
-        spreadsheetDropZone.addEventListener('dragover', (e) => { e.preventDefault(); spreadsheetDropZone.classList.add('drop-zone-active'); });
-        spreadsheetDropZone.addEventListener('dragleave', (e) => { e.preventDefault(); spreadsheetDropZone.classList.remove('drop-zone-active'); });
-        spreadsheetDropZone.addEventListener('drop', (e) => {
-            e.preventDefault();
-            spreadsheetDropZone.classList.remove('drop-zone-active');
-            if (e.dataTransfer.files.length > 0) {
-                handleSpreadsheet(e.dataTransfer.files[0]);
             }
         });
 
@@ -775,6 +834,7 @@
         function validateCrossFileData(files) {
             const filesByCpf = {};
             files.forEach(file => {
+                file.hasInconsistency = false;
                 if (!file.error && file.cpf !== 'SEM_CPF') {
                     if (!filesByCpf[file.cpf]) filesByCpf[file.cpf] = [];
                     filesByCpf[file.cpf].push(file);
@@ -854,8 +914,8 @@
                     statusIcon = 'fas fa-check-circle'; statusColor = 'text-emerald-500';
                     newNameHtml = `<div class="flex items-center flex-wrap"><p class="text-xs font-semibold text-slate-800 dark:text-slate-100">${fileData.newName}</p></div>`;
                     
-                    if (fileData.newBlob) { // Apenas cria botão de download se o blob existir (sessão atual)
-                        actionButton = `<a href="${URL.createObjectURL(fileData.newBlob)}" download="${fileData.newName}" class="ml-4 text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition flex-shrink-0" data-tooltip="Baixar ficheiro"><i class="fas fa-download"></i></a>`;
+                    if (fileData.newBlob) {
+                        actionButton = `<a href="${URL.createObjectURL(fileData.newBlob)}" download="${fileData.newName}" class="ml-4 text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition flex-shrink-0" data-tooltip="Baixar arquivo"><i class="fas fa-download"></i></a>`;
                     } else {
                         actionButton = `<span class="ml-4 text-slate-400 dark:text-slate-500 cursor-not-allowed" data-tooltip="Download indisponível para sessões antigas"><i class="fas fa-download"></i></span>`;
                     }
@@ -864,7 +924,7 @@
                         cpfWarningHtml = `<span class="ml-2" data-tooltip="CPF inválido"><i class="fas fa-exclamation-triangle text-amber-500"></i></span>`;
                     }
                     if (fileData.hasInconsistency) {
-                        inconsistencyWarningHtml = `<span class="ml-2" data-tooltip="Inconsistência: Matrícula diferente para este CPF em outro ficheiro."><i class="fas fa-exclamation-circle text-orange-500"></i></span>`;
+                        inconsistencyWarningHtml = `<span class="ml-2" data-tooltip="Inconsistência: Matrícula diferente para este CPF em outro arquivo."><i class="fas fa-exclamation-circle text-orange-500"></i></span>`;
                     }
                     if (fileData.isDuplicate) {
                         duplicateWarningHtml = `<span class="ml-2" data-tooltip="Duplicidade: Já existe um evento ${fileData.eventType} para este CPF na lista."><i class="fas fa-copy text-yellow-500"></i></span>`;
@@ -911,7 +971,7 @@
                 if (!summary.has(file.cpf)) {
                     const employeeName = socEmployeesData.has(file.cpf) 
                         ? socEmployeesData.get(file.cpf).name 
-                        : `CPF: ${file.cpf}`;
+                        : `CPF: ${formatCPF(file.cpf)}`;
                     summary.set(file.cpf, { name: employeeName, events: new Set() });
                 }
                 summary.get(file.cpf).events.add(file.eventType);
@@ -944,12 +1004,17 @@
         }
 
         function updateEmployeeStatusUI() {
+            if (socEmployeesData.size === 0) {
+                employeeStatusContainer.classList.add('hidden');
+                return;
+            }
+            
             const employeesWithFiles = Array.from(socEmployeesData.values()).filter(data => data.hasS2220 || data.hasS2240);
-
             if (employeesWithFiles.length === 0) {
                 employeeStatusContainer.classList.add('hidden');
                 return;
             }
+
             employeeStatusContainer.classList.remove('hidden');
             employeeStatusList.innerHTML = '';
 
@@ -987,18 +1052,10 @@
         }
 
         errorModal.closeBtn.addEventListener('click', closeErrorModal);
-        dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('drop-zone-active'); });
-        dropZone.addEventListener('dragleave', (e) => { e.preventDefault(); dropZone.classList.remove('drop-zone-active'); });
-        dropZone.addEventListener('drop', (e) => {
-            e.preventDefault();
-            dropZone.classList.remove('drop-zone-active');
-            handleFiles(e.dataTransfer.files);
-        });
-        dropZone.addEventListener('click', () => fileInput.click());
-        fileInput.addEventListener('change', (e) => handleFiles(e.target.files));
-
+        
         async function handleFiles(files) {
             let cnpjCompleto, companyName;
+
             if (empresaSelect.value === 'manual') {
                 cnpjCompleto = manualCnpjInput.value.trim().replace(/\D/g, '');
                 if (cnpjCompleto.length !== 14) {
@@ -1018,14 +1075,18 @@
                 showError('Padrão não selecionado', 'Por favor, crie ou selecione um padrão de nomenclatura.');
                 fileInput.value = ''; return;
             }
+            
             const newFiles = Array.from(files).filter(file => file.type === 'text/xml' || file.name.endsWith('.xml'));
             if (newFiles.length === 0) {
-                showError('Ficheiro Inválido', 'Por favor, selecione apenas ficheiros .xml.'); return;
+                showError('Arquivo Inválido', 'Por favor, selecione apenas arquivos .xml.'); return;
             }
+
+            toggleLoader('file-input', true);
+
             const processingPromises = newFiles.map(file => processFile({ file: file, originalName: file.name }, cnpjCompleto, companyName));
             let results = await Promise.all(processingPromises);
             
-            processedFiles.push(...results); // Adiciona os novos resultados aos existentes
+            processedFiles.push(...results);
             processedFiles = validateCrossFileData(processedFiles);
             processedFiles = checkForDuplicates(processedFiles);
 
@@ -1048,6 +1109,7 @@
             updateEmployeeStatusUI();
             updateProcessedSummaryUI();
             fileInput.value = '';
+            toggleLoader('file-input', false);
         }
 
         async function processFile(fileData, cnpj, companyName) {
@@ -1057,14 +1119,20 @@
                 const xmlDoc = parser.parseFromString(xmlText, "application/xml");
                 const parserError = xmlDoc.querySelector("parsererror");
                 if (parserError) return { ...fileData, error: "XML mal formatado." };
-                const getText = (selector) => xmlDoc.querySelector(selector)?.textContent || null;
+                
+                const getTagText = (tagName) => {
+                    const nodeList = xmlDoc.getElementsByTagName(tagName);
+                    return nodeList.length > 0 ? nodeList[0].textContent : null;
+                }
+
                 const eventNode = xmlDoc.querySelector('[Id]');
                 if (!eventNode) return { ...fileData, error: "Tag de evento com 'Id' não encontrada." };
+                
                 const idEvento = eventNode.getAttribute('Id');
-                const cpf = (getText("cpfTrab") || "SEM_CPF").replace(/\D/g, '').padStart(11, '0');
+                const cpf = (getTagText("cpfTrab") || "SEM_CPF").replace(/\D/g, '').padStart(11, '0');
                 const isCpfValid = validaCPF(cpf);
-                const matricula = getText("matricula") || "SEM_MATRICULA";
-                const dtAdm = getText("dtAdm") || "N/A"; 
+                const matricula = getTagText("matricula") || "SEM_MATRICULA";
+                const dtAdm = getTagText("dtAdm") || "N/A"; 
                 const dataHora = idEvento.substring(17, 31);
                 let prefixo = "DESCONHECIDO", eventType = "DESCONHECIDO";
                 const nomeDoEvento = eventNode.localName;
@@ -1083,7 +1151,7 @@
             }
         }
 
-        function saveFile(blob, filename) {
+        function saveAs(blob, filename) {
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
             link.download = filename;
@@ -1097,7 +1165,7 @@
             const zip = new JSZip();
             const validFiles = processedFiles.filter(f => f.newBlob && !f.error);
             if (validFiles.length === 0) {
-                showError("Sem ficheiros para download", "Apenas ficheiros carregados na sessão atual podem ser descarregados.");
+                showError("Sem arquivos para download", "Apenas arquivos carregados na sessão atual podem ser descarregados.");
                 return;
             }
             const organizeInFolders = organizeFoldersCheckbox.checked;
@@ -1107,25 +1175,25 @@
                     const companyFullName = fileData.companyName;
                     const firstName = companyFullName.split(' ')[0];
                     const cnpjEnding = companyFullName.match(/\(([^)]+)\)/)?.[1] || '';
-                    path += `${firstName} ${cnpjEnding}`.trim() + '/';
+                    path += `${firstName} ${cnpjEnding}`.trim().replace(/[\/\\?%*:|"<>]/g, '-') + '/';
                     path += fileData.eventType + '/';
                 }
                 zip.file(path + fileData.newName, fileData.newBlob);
             });
             zip.generateAsync({ type: "blob" }).then(content => {
-                saveFile(content, `eSocial_Renomeados_${Date.now()}.zip`);
+                saveAs(content, `eSocial_Renomeados_${Date.now()}.zip`);
             });
         });
 
         downloadIndividualBtn.addEventListener('click', () => {
             const validFiles = processedFiles.filter(f => f.newBlob && !f.error);
             if (validFiles.length === 0) {
-                 showError("Sem ficheiros para download", "Apenas ficheiros carregados na sessão atual podem ser descarregados.");
+                 showError("Sem arquivos para download", "Apenas arquivos carregados na sessão atual podem ser descarregados.");
                 return;
             }
             validFiles.forEach((fileData, index) => {
                 setTimeout(() => {
-                    saveFile(fileData.newBlob, fileData.newName);
+                    saveAs(fileData.newBlob, fileData.newName);
                 }, index * 200);
             });
         });
@@ -1138,7 +1206,7 @@
                     "Nome Original": file.originalName,
                     "Novo Nome": file.newName || 'N/A',
                     "Status": file.error ? `ERRO: ${file.error}` : 'Sucesso',
-                    "CPF": file.cpf || 'N/A',
+                    "CPF": formatCPF(file.cpf) || 'N/A',
                     "Status CPF": file.error ? 'N/A' : (file.isCpfValid ? 'Válido' : 'Inválido'),
                     "Matricula": file.matricula || 'N/A',
                     "Data de Admissão": file.dtAdm || 'N/A',
@@ -1148,27 +1216,28 @@
                     "Encontrado na Planilha": socEmployeesData.has(file.cpf) ? 'Sim' : 'Não'
                 }));
                 const ws1 = XLSX.utils.json_to_sheet(reportData);
-                XLSX.utils.book_append_sheet(wb, ws1, "Relatório de Ficheiros");
+                XLSX.utils.book_append_sheet(wb, ws1, "Relatório de Arquivos");
             }
 
-            const employeesWithFiles = Array.from(socEmployeesData.entries())
-                .filter(([cpf, data]) => data.hasS2220 || data.hasS2240)
-                .map(([cpf, data]) => ({
-                    "Nome Funcionário": data.name,
-                    "CPF": cpf,
-                    "Envio S-2220": data.hasS2220 ? "Sim" : "Não",
-                    "Envio S-2240": data.hasS2240 ? "Sim" : "Não"
-                }));
-
-            if (employeesWithFiles.length > 0) {
-                const ws2 = XLSX.utils.json_to_sheet(employeesWithFiles);
-                XLSX.utils.book_append_sheet(wb, ws2, "Status de Envios por Funcionário");
+            if (socEmployeesData.size > 0) {
+                const employeesWithFiles = Array.from(socEmployeesData.entries())
+                    .map(([cpf, data]) => ({
+                        "Nome Funcionário": data.name,
+                        "CPF": formatCPF(cpf),
+                        "Envio S-2220": data.hasS2220 ? "Sim" : "Não",
+                        "Envio S-2240": data.hasS2240 ? "Sim" : "Não"
+                    }));
+                
+                if (employeesWithFiles.length > 0) {
+                    const ws2 = XLSX.utils.json_to_sheet(employeesWithFiles);
+                    XLSX.utils.book_append_sheet(wb, ws2, "Status por Funcionário");
+                }
             }
             
             if (wb.SheetNames.length > 0) {
                 XLSX.writeFile(wb, `Relatorio_eSocial_${Date.now()}.xlsx`);
             } else {
-                showError('Nenhum dado para exportar', 'Processe alguns ficheiros ou carregue uma planilha com funcionários correspondentes.');
+                showError('Nenhum dado para exportar', 'Processe alguns arquivos ou carregue uma planilha para gerar um relatório.');
             }
         });
 
@@ -1177,44 +1246,71 @@
             socEmployeesData.clear();
             spreadsheetStatus.textContent = 'Carregar Planilha';
             spreadsheetInput.value = '';
+            
+            confirmationFiles = [];
+            updateConfirmationListUI();
+
             updateFileListUI();
             updateEmployeeStatusUI();
             updateProcessedSummaryUI();
         });
 
-        // --- Lógica para Gerar Comprovante de Confirmação ---
         function generateConfirmationProof() {
             if (confirmationFiles.length === 0) {
-                showError('Nenhum dado', 'Não há ficheiros validados para gerar um comprovante.');
+                showError('Nenhum dado', 'Não há arquivos validados para gerar um comprovante.');
+                return;
+            }
+            
+            const selectedCompanyOption = empresaSelect.options[empresaSelect.selectedIndex];
+            if (!selectedCompanyOption || !selectedCompanyOption.value || selectedCompanyOption.value === 'manual') {
+                showError('Empresa não selecionada', 'Por favor, selecione uma empresa da lista para gerar o comprovante.');
                 return;
             }
 
-            const companyName = empresaSelect.options[empresaSelect.selectedIndex]?.text || "Empresa não selecionada";
+            const companyName = selectedCompanyOption.text;
             const referenceMonth = confirmationMonthSelect.options[confirmationMonthSelect.selectedIndex].text;
             const referenceYear = confirmationYearInput.value;
             const generationDate = new Date().toLocaleString('pt-BR');
 
-            let tableRows = '';
+            // Agrupa arquivos por CPF
+            const filesByCpf = new Map();
             confirmationFiles.forEach(file => {
-                let statusText, statusColor;
-                const employeeIdentifier = socEmployeesData.has(file.cpf) ? socEmployeesData.get(file.cpf).name : `CPF: ${file.cpf}`;
-
-                if (file.error) {
-                    statusText = `Erro: ${file.error}`;
-                    statusColor = '#dc2626'; // Red
-                } else if (file.status === 'confirmed') {
-                    statusText = 'Confirmado';
-                    statusColor = '#16a34a'; // Green
-                } else {
-                    statusText = `Mês Divergente (Recibo de ${file.receiptMonth})`;
-                    statusColor = '#f59e0b'; // Amber
+                if (!filesByCpf.has(file.cpf)) {
+                    filesByCpf.set(file.cpf, []);
                 }
+                filesByCpf.get(file.cpf).push(file);
+            });
+
+            let tableRows = '';
+            filesByCpf.forEach((files, cpf) => {
+                const employeeIdentifier = socEmployeesData.has(cpf) 
+                    ? socEmployeesData.get(cpf).name 
+                    : `CPF: ${formatCPF(cpf)}`;
+                
+                const isMultiple = files.length > 1;
+
+                const filesHtml = files.map(f => f.originalName).join('<br>');
+                
+                const statusesHtml = files.map(file => {
+                    let statusText, statusColor;
+                    if (file.error) {
+                        statusText = `Erro: ${file.error}`;
+                        statusColor = '#dc2626';
+                    } else if (file.status === 'confirmed') {
+                        statusText = 'Confirmado';
+                        statusColor = '#16a34a';
+                    } else {
+                        statusText = `Mês Divergente (Recibo de ${file.receiptMonth})`;
+                        statusColor = '#f59e0b';
+                    }
+                    return `<span style="color: ${statusColor};">${statusText}</span>`;
+                }).join('<br>');
 
                 tableRows += `
                     <tr>
-                        <td>${employeeIdentifier}</td>
-                        <td>${file.originalName}</td>
-                        <td style="color: ${statusColor}; font-weight: bold;">${statusText}</td>
+                        <td>${employeeIdentifier}${isMultiple ? '<br><small style="color: #555;">(Múltiplos eventos)</small>' : ''}</td>
+                        <td>${filesHtml}</td>
+                        <td style="font-weight: bold;">${statusesHtml}</td>
                     </tr>
                 `;
             });
@@ -1228,13 +1324,14 @@
                     <style>
                         body { font-family: Arial, sans-serif; margin: 40px; }
                         h1 { color: #333; }
-                        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-                        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+                        table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 12px; }
+                        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; vertical-align: top; }
                         th { background-color: #f2f2f2; }
                         .header { margin-bottom: 30px; border-bottom: 2px solid #ccc; padding-bottom: 15px; }
                         p { color: #555; }
                         @media print {
                             button { display: none; }
+                            @page { size: A4; margin: 2cm; }
                         }
                     </style>
                 </head>
@@ -1248,8 +1345,8 @@
                     <table>
                         <thead>
                             <tr>
-                                <th>Funcionário</th>
-                                <th>Ficheiro do Recibo</th>
+                                <th>Funcionário/CPF</th>
+                                <th>Arquivo do Recibo</th>
                                 <th>Status da Validação</th>
                             </tr>
                         </thead>
@@ -1257,7 +1354,7 @@
                             ${tableRows}
                         </tbody>
                     </table>
-                    <button onclick="window.print()" style="margin-top: 20px; padding: 10px 20px; cursor: pointer;">Imprimir</button>
+                    <button onclick="window.print()" style="margin-top: 20px; padding: 10px 20px; cursor: pointer; background-color: #007bff; color: white; border: none; border-radius: 5px;">Imprimir</button>
                 </body>
                 </html>
             `;
@@ -1267,7 +1364,6 @@
             proofWindow.document.close();
         }
 
-        // --- INICIALIZAÇÃO E LÓGICA DA SEÇÃO DE CONFIRMAÇÃO ---
         function setupConfirmationSection() {
             const now = new Date();
             const currentMonth = now.getMonth();
@@ -1285,15 +1381,6 @@
             });
             confirmationYearInput.value = currentYear;
 
-            confirmationDropZone.addEventListener('click', () => confirmationInput.click());
-            confirmationInput.addEventListener('change', (e) => handleConfirmationFiles(e.target.files));
-            confirmationDropZone.addEventListener('dragover', (e) => { e.preventDefault(); confirmationDropZone.classList.add('drop-zone-active'); });
-            confirmationDropZone.addEventListener('dragleave', (e) => { e.preventDefault(); confirmationDropZone.classList.remove('drop-zone-active'); });
-            confirmationDropZone.addEventListener('drop', (e) => {
-                e.preventDefault();
-                confirmationDropZone.classList.remove('drop-zone-active');
-                handleConfirmationFiles(e.dataTransfer.files);
-            });
             clearConfirmationsBtn.addEventListener('click', () => {
                 confirmationFiles = [];
                 updateConfirmationListUI();
@@ -1311,12 +1398,17 @@
             const referenceYYYYMM = `${referenceYear}${referenceMonth}`;
 
             const newFiles = Array.from(files).filter(file => file.type === 'text/xml' || file.name.endsWith('.xml'));
+            
+            if (newFiles.length === 0) return;
+            
+            toggleLoader('confirmation-input', true);
             const processingPromises = newFiles.map(file => processConfirmationFile(file, referenceYYYYMM));
             const results = await Promise.all(processingPromises);
 
             confirmationFiles.push(...results);
             updateConfirmationListUI();
             confirmationInput.value = '';
+            toggleLoader('confirmation-input', false);
         }
 
         async function processConfirmationFile(file, referenceYYYYMM) {
@@ -1325,18 +1417,35 @@
                 const parser = new DOMParser();
                 const xmlDoc = parser.parseFromString(xmlText, "application/xml");
                 
-                const nrReciboNode = xmlDoc.querySelector("nrRecibo");
-
-                if (!nrReciboNode) {
-                    return { originalName: file.name, error: "Recibo não encontrado no ficheiro." };
+                const parserError = xmlDoc.querySelector("parsererror");
+                if (parserError) {
+                    console.error("Erro de parsing do XML:", parserError.textContent);
+                    return { originalName: file.name, error: "XML mal formatado ou inválido.", cpf: "N/A" };
+                }
+                
+                const cpfNodes = xmlDoc.getElementsByTagName("cpfTrab");
+                let cpfTrab = "SEM_CPF";
+                if (cpfNodes.length > 0) {
+                    cpfTrab = cpfNodes[0].textContent.replace(/\D/g, '').padStart(11, '0');
                 }
 
-                // Tenta encontrar o CPF em múltiplos locais para ser mais robusto
-                const cpfTrabNode = xmlDoc.querySelector("cpfTrab") || xmlDoc.querySelector("cpf");
+                const reciboNodes = xmlDoc.getElementsByTagName("nrRecibo");
+                let nrReciboNode = null;
+
+                if (reciboNodes.length > 0) {
+                    nrReciboNode = reciboNodes[0];
+                }
+
+                if (!nrReciboNode) {
+                    return { originalName: file.name, error: "Recibo não encontrado no arquivo.", cpf: cpfTrab };
+                }
+
                 const nrRecibo = nrReciboNode.textContent;
-                const cpfTrab = cpfTrabNode ? cpfTrabNode.textContent.replace(/\D/g, '').padStart(11, '0') : "SEM_CPF";
                 
-                // Formato do recibo: 1.2.YYYYMMDDHHMMSSNNNNN
+                if (!nrRecibo || nrRecibo.length < 10) {
+                    return { originalName: file.name, error: "Formato de recibo inválido.", cpf: cpfTrab };
+                }
+                
                 const receiptYYYYMM = nrRecibo.substring(4, 10);
                 
                 const status = receiptYYYYMM === referenceYYYYMM ? 'confirmed' : 'mismatched';
@@ -1344,7 +1453,7 @@
                 return { originalName: file.name, cpf: cpfTrab, status, receiptMonth: `${receiptYYYYMM.substring(4,6)}/${receiptYYYYMM.substring(0,4)}` };
 
             } catch(e) {
-                return { originalName: file.name, error: `Erro de leitura: ${e.message}` };
+                return { originalName: file.name, error: `Erro de leitura: ${e.message}`, cpf: "N/A" };
             }
         }
 
@@ -1354,20 +1463,21 @@
             clearConfirmationsBtn.disabled = !hasFiles;
             generateProofBtn.disabled = !hasFiles;
             
-            const itemsToRemove = confirmationListContainer.querySelectorAll('.confirmation-item');
-            itemsToRemove.forEach(item => item.remove());
+            confirmationListContainer.querySelectorAll('.confirmation-item').forEach(item => item.remove());
 
             confirmationFiles.forEach(file => {
                 const div = document.createElement('div');
                 div.className = 'p-2 rounded-md flex items-center justify-between text-sm confirmation-item';
                 let icon, color, message;
 
-                const employeeIdentifier = socEmployeesData.has(file.cpf) ? socEmployeesData.get(file.cpf).name : `CPF: ${file.cpf}`;
+                const employeeIdentifier = socEmployeesData.has(file.cpf) 
+                    ? socEmployeesData.get(file.cpf).name 
+                    : `CPF: ${formatCPF(file.cpf)}`;
 
                 if (file.error) {
                     icon = 'fas fa-times-circle';
                     color = 'text-rose-500 dark:text-rose-400';
-                    message = `<span class="font-semibold">${file.error}</span>`;
+                    message = `<span class="font-semibold">${file.error}</span> (${employeeIdentifier})`;
                     div.classList.add('bg-rose-50', 'dark:bg-rose-900/50');
                 } else if (file.status === 'confirmed') {
                     icon = 'fas fa-check-circle';
@@ -1394,6 +1504,29 @@
             });
         }
         
+        function toggleLoader(loaderId, show) {
+            const icon = document.getElementById(`${loaderId}-icon`);
+            const text = document.getElementById(`${loaderId}-text`);
+            const loader = document.getElementById(`${loaderId}-loader`);
+            if (icon) icon.classList.toggle('hidden', show);
+            if (text) text.classList.toggle('hidden', show);
+            if (loader) loader.classList.toggle('hidden', !show);
+        }
+
+        function setupDropZone(dropZoneEl, inputEl, fileHandler) {
+            dropZoneEl.addEventListener('click', () => inputEl.click());
+            dropZoneEl.addEventListener('dragover', (e) => { e.preventDefault(); dropZoneEl.classList.add('drop-zone-active'); });
+            dropZoneEl.addEventListener('dragleave', (e) => { e.preventDefault(); dropZoneEl.classList.remove('drop-zone-active'); });
+            dropZoneEl.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropZoneEl.classList.remove('drop-zone-active');
+                if (e.dataTransfer.files.length > 0) {
+                    fileHandler(e.dataTransfer.files);
+                }
+            });
+            inputEl.addEventListener('change', (e) => fileHandler(e.target.files));
+        }
+        
         // --- INICIALIZAÇÃO GERAL ---
         applyTheme();
         loadCompanies();
@@ -1401,11 +1534,35 @@
         updateButtonStates();
         setupConfirmationSection();
         
-        // Event Listeners para Sessão
-        saveSessionBtn.addEventListener('click', saveSession);
-        loadSessionBtn.addEventListener('click', () => sessionFileInput.click());
+        setupDropZone(dropZone, fileInput, handleFiles);
+        setupDropZone(spreadsheetDropZone, spreadsheetInput, (files) => handleSpreadsheet(files[0]));
+        setupDropZone(confirmationDropZone, confirmationInput, handleConfirmationFiles);
+
+        loadSessionBtn.addEventListener('click', () => {
+            if (processedFiles.length > 0) {
+                confirmModal.el.classList.remove('hidden');
+                confirmModal.el.classList.add('flex');
+            } else {
+                sessionFileInput.click();
+            }
+        });
+
+        confirmModal.okBtn.addEventListener('click', () => {
+            sessionFileInput.click();
+            confirmModal.el.classList.add('hidden');
+            confirmModal.el.classList.remove('flex');
+        });
+
+        confirmModal.cancelBtn.addEventListener('click', () => {
+            confirmModal.el.classList.add('hidden');
+            confirmModal.el.classList.remove('flex');
+        });
+
         sessionFileInput.addEventListener('change', loadSession);
+        saveSessionBtn.addEventListener('click', saveSession);
     });
     </script>
 </body>
 </html>
+
+
